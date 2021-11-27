@@ -22,6 +22,7 @@ from .models import Articulo, AutorXArticulo, AutorXArticuloSinUsuario, ChairXSi
 from rest_framework.decorators import api_view, authentication_classes
 from usuarios.authentication import *
 from usuarios.models import *
+from eventos.models import *
 from usuarios.serializers import RolxUsuarioxCongresoSerializer
 from congresos.models import *
 from congresos.serializers import *
@@ -1344,6 +1345,12 @@ def rechazarEvaluacion(request):
             articulo = Articulo.objects.filter(id=payload['idArticulo']).first()
             chair_simposio = ChairXSimposioXCongreso.objects.filter(idSimposio=articulo.idSimposio.id, idCongreso =payload['idCongreso']).first()
             evaluacion.delete()
+            cancelacion = {
+                "idArticulo":articulo.id,
+                "idUsuario":payload['idEvaluador'],
+                "idCongreso":payload['idCongreso']
+            }
+            registrarCancelacion(cancelacion)
             datos = {
                 "evaluador": evaluador.email,
                 "articulo": articulo.nombre,
@@ -1500,7 +1507,7 @@ def eliminarEvaluador(request,id):
             'data': []
         }, status=status.HTTP_400_BAD_REQUEST)
 
-    if usuario.is_authenticated and usuario.is_superuser:
+    if usuario.is_authenticated:
         evaluador.delete()
         return Response({
                 'status': '200',
@@ -2411,6 +2418,150 @@ def getArticulosEvaluadoresCompleto(request):
                     }, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(method='get', responses={'200': ArticulosXEvaluadorSerializer ,'400': 'Error.'})
+@api_view(['GET'])
+@authentication_classes([AuthenticationChairPrincipal])
+def getArticulosCameraReady(request):
+
+    token = request.headers['Authorization']
+    if not token:
+        raise AuthenticationFailed('Usuario no autenticado!')
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY)
+    except jwt.ExpiredSignatureError:
+        raise AuthenticationFailed('Usuario no autenticado!')
+    idCongreso = payload['idCongreso']
+    # chairxsimposio = ChairXSimposioXCongreso.objects.filter(idCongreso=idCongreso).filter(idUsuario=payload["id"]).first()
+    try:
+        # simposioC = SimposiosxCongreso.objects.filter(idCongreso=idCongreso,idSimposio=chairxsimposio.idSimposio).first()
+        articulos = Articulo.objects.filter(idCongreso=idCongreso).all()
+        # simposio = simposioC.idSimposio
+        if len(articulos) > 0:
+            respuesta = []
+            for art in articulos:
+                vectorAutores = []
+                autores = AutorXArticulo.objects.filter(idArticulo=art.id).all()
+                for a in autores:
+                    dataAutor = {
+                        "id": a.idUsuario.id,
+                        "nombre": a.idUsuario.nombre,
+                        "apellido": a.idUsuario.apellido,
+                        "email": a.idUsuario.email,
+                        "idSede": a.idUsuario.sede.id,
+                        "nombreSede": a.idUsuario.sede.nombre
+                    }
+                    vectorAutores.append(dataAutor)
+                if art.url_camera_ready is not None:
+                    autor = Usuario.objects.filter(email=art.responsable).first()
+                    estado = art.idEstado
+                    data = {
+                    "idArticulo": art.id,
+                    "idEstado": estado.id,
+                    "estadoArticuloNombre": estado.nombre,
+                    "estadoArticuloDescripcion": estado.descripcion,
+                    "nombreArticulo": art.nombre,
+                    "idSimposio": art.idSimposio.idSimposio.id,
+                    "nombreSimposio": art.idSimposio.idSimposio.nombre,
+                    "descSimposio": art.idSimposio.idSimposio.descripcion,
+                    "idSimposio": autor.sede.id,
+                    "sedeArticulo": autor.sede.nombre,
+                    "urlCameraReady": art.url_camera_ready,
+                    "autores": vectorAutores
+                    }
+                    respuesta.append(data)
+            return Response({
+            'status': '200',
+            'error': '',
+            'data': respuesta
+        }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+            'status': '400',
+            'error': 'No existen articulos en el simposio para este congreso.',
+            'data': []
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({
+                        'status': '400',
+                        'error': e.args,
+                        'data': []
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@swagger_auto_schema(method='get', responses={'200': ArticulosXEvaluadorSerializer ,'400': 'Error.'})
+@api_view(['GET'])
+@authentication_classes([AuthenticationChairPrincipal])
+def getArticulosParaEventos(request):
+
+    token = request.headers['Authorization']
+    if not token:
+        raise AuthenticationFailed('Usuario no autenticado!')
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY)
+    except jwt.ExpiredSignatureError:
+        raise AuthenticationFailed('Usuario no autenticado!')
+    idCongreso = payload['idCongreso']
+    idSimposio = request.GET['idSimposio']
+    # chairxsimposio = ChairXSimposioXCongreso.objects.filter(idCongreso=idCongreso).filter(idUsuario=payload["id"]).first()
+    try:
+        # simposioC = SimposiosxCongreso.objects.filter(idCongreso=idCongreso,idSimposio=chairxsimposio.idSimposio).first()
+        articulos = Articulo.objects.filter(idCongreso=idCongreso, idSimposio=idSimposio).all()
+        # simposio = simposioC.idSimposio
+        if len(articulos) > 0:
+            respuesta = []
+            for art in articulos:
+                evento = Evento.objects.filter(idCongreso=idCongreso, idSimposio=idSimposio, idArticulo=art.id).first()
+                if evento is not None:
+                    continue
+                vectorAutores = []
+                autores = AutorXArticulo.objects.filter(idArticulo=art.id).all()
+                for a in autores:
+                    dataAutor = {
+                        "id": a.idUsuario.id,
+                        "nombre": a.idUsuario.nombre,
+                        "apellido": a.idUsuario.apellido,
+                        "email": a.idUsuario.email,
+                        "idSede": a.idUsuario.sede.id,
+                        "nombreSede": a.idUsuario.sede.nombre
+                    }
+                    vectorAutores.append(dataAutor)
+                if art.url_camera_ready is not None:
+                    autor = Usuario.objects.filter(email=art.responsable).first()
+                    estado = art.idEstado
+                    data = {
+                    "idArticulo": art.id,
+                    "idEstado": estado.id,
+                    "estadoArticuloNombre": estado.nombre,
+                    "estadoArticuloDescripcion": estado.descripcion,
+                    "nombreArticulo": art.nombre,
+                    "idSimposio": art.idSimposio.idSimposio.id,
+                    "nombreSimposio": art.idSimposio.idSimposio.nombre,
+                    "descSimposio": art.idSimposio.idSimposio.descripcion,
+                    "idSimposio": autor.sede.id,
+                    "sedeArticulo": autor.sede.nombre,
+                    "urlCameraReady": art.url_camera_ready,
+                    "autores": vectorAutores
+                    }
+                    respuesta.append(data)
+            return Response({
+            'status': '200',
+            'error': '',
+            'data': respuesta
+        }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+            'status': '400',
+            'error': 'No existen articulos en el simposio para este congreso.',
+            'data': []
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({
+                        'status': '400',
+                        'error': e.args,
+                        'data': []
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+
 @api_view(['POST'])
 @authentication_classes([AuthenticationChairSecundario])
 def asignarArticuloEvaluadorMasivo(request):
@@ -3010,3 +3161,9 @@ def esEvaluador(request):
         'error': '',
         'data': True
     }, status=status.HTTP_200_OK)
+
+
+def registrarCancelacion(datos):
+    serializer = EvaluacionCanceladaSerializer(data=datos)
+    if serializer.is_valid():
+            serializer.save()

@@ -66,6 +66,11 @@ class EvaluadorSerializer(serializers.ModelSerializer):
         model = Evaluador
         fields = ['idUsuario', 'is_active']
 
+class EvaluacionCanceladaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EvaluacionCancelada
+        fields = ['idUsuario', 'idArticulo','idCongreso']
+
 class EvaluadorCalificacionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Evaluador

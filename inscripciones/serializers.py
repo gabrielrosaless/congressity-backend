@@ -15,10 +15,16 @@ class CuponDescuentoSerializer(serializers.ModelSerializer):
 class InscripcionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Inscripcion
-        fields = ['id','idUsuario', 'idTarifa', 'idCongreso', 'fechaPago', 'fechaInscripcion', 'idCupon', 'precioFinal']
+        fields = ['id','idUsuario', 'idTarifa', 'idCongreso', 'fechaPago', 'fechaInscripcion', 'idCupon', 'precioFinal','asistio']
 
 
+class InscripcionSinCuentaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InscripcionSinCuenta
+        fields = ['email','nombre','apellido','dni','tipoDni','fechaNacimiento', 'idTarifa', 'idCongreso', 'fechaPago', 'fechaInscripcion', 'precioFinal','asistio']
 
 
-
-
+class AyudanteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ayudante
+        fields = ['id','idUsuario','idCongreso','is_active']

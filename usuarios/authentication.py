@@ -99,5 +99,20 @@ class AuthenticationAutor(authentication.BaseAuthentication):
         return (user, None)
 
 
+class AuthenticationAyudante(authentication.BaseAuthentication):
+    def authenticate(self, request):
+
+        token = request.headers['Authorization']
+        
+        if not token:
+            raise exceptions.AuthenticationFailed('Usuario no autenticado!')
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise exceptions.AuthenticationFailed('Usuario no autenticado!')
+
+        if 5 not in payload['rol']: raise exceptions.AuthenticationFailed('Se necesitan permisos de ayudante.')
+        user = get_object_or_404(Usuario, pk=payload['id'])
+        return (user, None)
 
  

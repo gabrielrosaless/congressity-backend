@@ -61,5 +61,7 @@ urlpatterns = [
     path('consultar-simposiosEvaluador/', getSimposiosxEvaluador, name="consultar-simposiosEvaluador"),
     path('eliminar-simposioEvaluador/', eliminarSimposioEvaluador, name="eliminar-simposioEvaluador"),
     path('lista-evaluadoresCongreso/', devolverEvaluadoresCongreso, name="lista-evaluadoresCongreso"),
-    path('es-evaluador/', esEvaluador, name="es-evaluador")
+    path('es-evaluador/', esEvaluador, name="es-evaluador"),
+    path('consultarArticulosCameraReady/', getArticulosCameraReady, name="consultarArticulosCameraReady"),
+    path('consultarArticulosParaEventos/', getArticulosParaEventos, name="consultarArticulosParaEventos")
 ]

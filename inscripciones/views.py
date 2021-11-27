@@ -33,7 +33,7 @@ def crearTarifa(request):
     """ Metodo para crear la tarifa asociada a un congreso. """
 
     usuario = request.user
-    
+
     serializer = TarifaSerializer(data=request.data)
 
     if (serializer.is_valid() and usuario.is_authenticated):
@@ -386,14 +386,14 @@ def crearInscripcion(request):
                         'error': '',
                         'data': serializer.data
                 }, status=status.HTTP_200_OK)
-    
+
     congreso = Congreso.objects.filter(id=payload['idCongreso']).first()
     tarifas = Tarifa.objects.filter(idCongreso=congreso.id).all()
     for tar in tarifas:
         if tar.fechaDesde.date() <= hoy.date() <= tar.fechaHasta.date():
             tarifa = tar
             break
-    
+
     if tarifa is None:
         return Response({
             'status': '200',
@@ -783,13 +783,14 @@ def send_mail_entrada(request, idInscripcion):
         payload = {
                 'idUsuario': idUsuario,
                 'idCongreso': idCongreso,
+                'idInscripcion': insc.id,
                 'exp' : date_mails.datetime.utcnow() + date_mails.timedelta(days=360),
                 'iat': date_mails.datetime.utcnow()
             }
         token = jwt.encode(payload, settings.SECRET_KEY , algorithm='HS256').decode('utf-8')
         current_site = get_current_site(request).domain
         relative_link = reverse('registrar-asistencia')
-        url= 'http://' + current_site + relative_link 
+        url= 'http://' + current_site + relative_link
         url = url + "?token=" + token
         qr = qrcode.QRCode(
             version = 1,
@@ -805,7 +806,7 @@ def send_mail_entrada(request, idInscripcion):
         img.save(archivo)
         context = {'data_imagen': nombre_archivo}
         template = get_template('entrada_congreso.html')
-        content = template.render(context) 
+        content = template.render(context)
         correo = EmailMultiAlternatives(
             'Entrada Al Congreso - CoNaIISI',
             '',
@@ -837,13 +838,438 @@ def registrar_asistencia(request):
     token = request.GET.get('token')
     try:
         payload = jwt.decode(token, settings.SECRET_KEY)
-        user = Usuario.objects.get(id=payload['idUsuario'])
-        congreso = Congreso.objects.get(id=payload['idCongreso'])
-        if not user.is_verified:
-            user.is_verified = True
-            user.save()
-        return Response({'email': 'Se activó correctamente la cuenta'}, status=status.HTTP_200_OK)
+        inscripcion = Inscripcion.objects.filter(id=payload['idInscripcion'], idCongreso=payload['idCongreso']).first()
+        # congreso = Congreso.objects.get(id=payload['idCongreso'])
+        if not inscripcion.asistio:
+            inscripcion.asistio = True
+            inscripcion.save()
+        return Response({'email': 'Se confirmo correctamente la asistencia.'}, status=status.HTTP_200_OK)
     except jwt.ExpiredSignatureError as identifier:
         return Response({'error': 'El link expiró'}, status= status.HTTP_400_BAD_REQUEST)
     except jwt.exceptions.DecodeError as identifier:
         return Response({'error': 'Token Inválido'}, status= status.HTTP_400_BAD_REQUEST)
+
+
+
+
+@api_view(['POST'])
+@authentication_classes([AuthenticationChairPrincipal])
+def asignarRolAyudante(request):
+    """
+    Permite asignarle el rol de ayudante a un usuario. (Persona que cobra las entradas fisica y controla la asistencia al congreso).
+    """
+    usuarioLogueado = request.user      #Usuario logueado
+    idAyudante = request.GET['idAyudante']      #Id del usuario al que quiero hacer ayudante
+    token = request.headers['Authorization']
+    payload = jwt.decode(token, settings.SECRET_KEY)
+    id_congreso = payload['idCongreso']
+
+    try:
+        # El id de usuario que mando no existe ya existe
+        if not Usuario.objects.filter(id=idAyudante).exists():
+            return Response({
+                'status': '400',
+                'error': 'El usuario que desea asignar como ayudante no existe.',
+                'data': []
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        ayudante = Ayudante.objects.filter(idUsuario=idAyudante).first()
+
+        # El ayudante ya existe
+        if ayudante != None:
+            usuario = Usuario.objects.filter(id=ayudante.idUsuario_id).first()
+            id = usuario.id
+            nombre = usuario.nombre
+            res = {
+                    'status': '400',
+                    'error': 'El usuario {} (id: {}) ya es un ayudante.'.format(nombre,id),
+                    'data': []
+            }
+            return Response(res, status= status.HTTP_400_BAD_REQUEST)
+
+        # El usuario existe y no es ayudante aún
+        if usuarioLogueado.is_authenticated:
+            usuario = Usuario.objects.filter(id=idAyudante).first()
+
+            # Agrego el usuario a la tabla Ayudante, con el campo activo en False
+            ayudante = {
+                'idUsuario':usuario.id,
+                'idCongreso':id_congreso,
+                'is_active': False,
+            }
+
+            serializer = AyudanteSerializer(data=ayudante)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+            ##--------------- ARMO EL MAIL --------------------------------##
+            email = usuario.email
+            current_site= config('URL_FRONT_DEV')
+            link_aceptar = 'aceptacionRolAyudante/'
+            payload = {
+                'email': email,
+                'idUsuario':usuario.id,
+                'exp' : datetime.utcnow() + timedelta(days=15),
+                'iat': datetime.utcnow()
+            }
+
+            token = jwt.encode(payload, settings.SECRET_KEY , algorithm='HS256').decode('utf-8')
+
+            url_aceptacion = 'http://' + current_site + link_aceptar + token
+            data = {'email':email ,'url_aceptacion': url_aceptacion}
+
+            send_mail_ayudante(data)
+
+            return Response({
+                'status': '200',
+                'error': '',
+                'data': []
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                        'status': '401',
+                        'error': 'El usuario no posee los permisos necesarios.',
+                        'data': []
+            }, status=status.HTTP_401_UNAUTHORIZED)
+
+    except Exception as e:
+        return Response({
+                        'status': '500',
+                        'error': e.args,
+                        'data': []
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def send_mail_ayudante(request):
+
+    try:
+        email = request['email']
+        linkAceptacion = request['url_aceptacion']
+        context = {'linkAceptacion': linkAceptacion}
+
+        template = get_template('invitacion_rol_ayudante.html')
+
+        content = template.render(context)
+        correo = EmailMultiAlternatives(
+            'Solicitud de Ayudante - CoNaIISI',
+            '',
+            settings.EMAIL_HOST_USER,
+            [email]
+        )
+        correo.attach_alternative(content, 'text/html')
+        correo.send()
+        return True
+    except:
+        return Response({
+            'status': '500',
+            'error': 'Error durante la creación/envio de mail.',
+            'data': []
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['PUT'])
+def aceptarRolAyudante(request):
+    """
+    Endpoint que se llama desde el mail que le llega al ayudante.
+    Permite activar el campo is_active de la tabla Ayudante.
+    """
+    token = request.GET.get('token')
+
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY)
+        ayudante = Ayudante.objects.filter(idUsuario=payload['idUsuario']).first()
+        if ayudante != None:
+            ayudante.is_active = True
+            ayudante.save()
+            return Response({'error': False, 'mensaje': 'Se acepto correcamente el rol de ayudante.'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': True, 'mensaje': 'El usuario no se encuentra solicitado como ayudante o no existe.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    except jwt.ExpiredSignatureError as identifier:
+      return Response({'error': 'El link expiró'}, status= status.HTTP_400_BAD_REQUEST)
+    except jwt.exceptions.DecodeError as identifier:
+      return Response({'error': 'Token Inválido'}, status= status.HTTP_400_BAD_REQUEST)
+
+
+
+
+@api_view(['GET'])
+@authentication_classes([AuthenticationChairPrincipal])
+def devolverAyudantes(request):
+    """ Devuelve una lista de los ayudantes actuales (solo los activos)."""
+    token = request.headers['Authorization']
+    payload = jwt.decode(token, settings.SECRET_KEY)
+    id_congreso = payload['idCongreso']
+    try:
+        ayudantes = Ayudante.objects.filter(is_active=True).filter(idCongreso=id_congreso).all()
+        data = []
+        if len(ayudantes) > 0:
+            for ayu in ayudantes:
+                serializer = AyudanteSerializer(ayu)
+                usuario = Usuario.objects.filter(id=ayu.idUsuario_id).first()
+                data_con = serializer.data
+                data_con['nombre'] = str(usuario.nombre) + ' ' + str(usuario.apellido)
+                data_con['email'] = str(usuario.email)
+                sede = Sede.objects.filter(id=usuario.sede.id).first()
+                if sede is None:
+                    nombreSede = None
+                else:
+                    nombreSede = sede.nombre
+                data_con['sede'] = str(nombreSede)
+                data.append(data_con)
+
+        return Response({
+                'status': '200',
+                'error': '',
+                'data': data
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        print(e.args)
+        return Response({
+            'status': '500',
+            'error': e.args,
+            'data': []
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['DELETE'])
+@authentication_classes([AuthenticationChairPrincipal])
+def eliminarAyudante(request):
+    """ Permite dar de baja un ayudante ( Elimina al ayudante de la tabla Ayudante, pero no de la tabla usuarios.)
+    """
+    usuario = request.user
+    id = request.GET.get('idAyudante')
+    ayudante = Ayudante.objects.filter(pk=id).first()
+    if ayudante is None:
+        return Response({
+            'status': '400',
+            'error': 'El ayudante no existe.',
+            'data': []
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    if usuario.is_authenticated:
+        ayudante.delete()
+        return Response({
+                'status': '200',
+                'error': '',
+                'data': "El ayudante ha sido dado de baja."
+        }, status=status.HTTP_200_OK)
+    else:
+        return Response({
+                'status': '401',
+                'error': 'No posee los permisos para dar de baja al ayudante.',
+                'data': []
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+
+
+@api_view(['GET'])
+@authentication_classes([AuthenticationAyudante])
+def verificarUsuario(request):
+    user_email = request.GET.get('email')
+    usuario = Usuario.objects.filter(email=user_email).first()
+    if usuario is None:
+        return Response({
+            'status': '200',
+            'error': '',
+            'data': []
+        }, status=status.HTTP_200_OK)
+    else:
+        data = {
+            "nombre":usuario.nombre,
+            "apellido":usuario.apellido,
+            "dni":usuario.dni,
+            "tipoDni":usuario.tipoDni.id,
+            "nombreTipoDni":usuario.tipoDni.nombre,
+            "fechaNacimiento":usuario.fechaNacimiento,
+            "email":user_email
+        }
+        return Response({
+            'status': '200',
+            'error': '',
+            'data': data
+        }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@authentication_classes([AuthenticationAyudante])
+def crearInscripcionFisicaUsuario(request):
+    """ Inscripcion fisica para usuario que posee cuenta en el sistema. """
+    
+    user_email = request.data['email']
+    token = request.headers['Authorization']
+    payload = jwt.decode(token, settings.SECRET_KEY)
+    hoy = datetime.now()
+
+    try:
+        #El usuario tiene cuenta, lo inscribo en la tabla Inscripcion
+        usuario = Usuario.objects.filter(email=user_email).first()
+        congreso = Congreso.objects.filter(id=payload['idCongreso']).first()
+
+        #Valido inscripcion 
+        inscripcion = Inscripcion.objects.filter(idUsuario=usuario.id, idCongreso = congreso.id).first()
+        if inscripcion is not None:
+            return Response({
+                    'status': '400',
+                    'error': 'El usuario ya está inscripto.',
+                    'data': []
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        tarifas = Tarifa.objects.filter(idCongreso=congreso.id).all()
+        tarifa = None
+        for tar in tarifas:
+            if tar.fechaDesde.date() <= hoy.date() <= tar.fechaHasta.date():
+                tarifa = tar
+                break
+        if tarifa is None:
+            return Response({
+                'status': '400',
+                'error': 'No hay tarifas válidas.',
+                'data': []
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        datos = {
+            'idUsuario': usuario.id,
+            'idTarifa': tarifa.id,
+            'idCongreso': congreso.id,
+            'fechaPago': hoy,
+            'fechaInscripcion': hoy,
+            'idCupon': None,
+            'precioFinal': tarifa.precio
+        }
+
+        serializer = InscripcionSerializer(data=datos)
+
+        if serializer.is_valid():
+            serializer.save()
+
+
+            # -------------------- ARMO EL MAIL ---------------------- #
+            datosInscripcion = {
+                'año': str(congreso.año),
+                'nombreCongreso': str(congreso.nombre),
+                'email': usuario.email
+            }
+            send_mail_insc_fisica(datosInscripcion)
+            return Response({
+                'status': '200',
+                'error': '',
+                'data': serializer.data
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'status': '400',
+                'error': serializer.errors,
+                'data': []
+                }, status=status.HTTP_400_BAD_REQUEST)
+    
+    except Exception as e:
+        return Response({
+            'status': '500',
+            'error': e.args,
+            'data': []
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@authentication_classes([AuthenticationAyudante])
+def crearInscripcionFisicaSinUsuario(request):
+    """ Inscripcion fisica para usuario que NO posee cuenta en el sistema. """
+    
+    token = request.headers['Authorization']
+    payload = jwt.decode(token, settings.SECRET_KEY)
+    hoy = datetime.now()
+    
+
+    try:
+        congreso = Congreso.objects.filter(id=payload['idCongreso']).first()
+        inscripcion = InscripcionSinCuenta.objects.filter(email= request.data['email'], idCongreso = congreso.id).first()
+        if inscripcion is not None:
+            return Response({
+                    'status': '400',
+                    'error': 'El email de la persona ya se encuentra inscripto en el congreso.',
+                    'data': []
+            }, status=status.HTTP_400_BAD_REQUEST)
+        tarifas = Tarifa.objects.filter(idCongreso=congreso.id).all()
+        tarifa = None
+        for tar in tarifas:
+            if tar.fechaDesde.date() <= hoy.date() <= tar.fechaHasta.date():
+                tarifa = tar
+                break
+        if tarifa is None:
+            return Response({
+                'status': '400',
+                'error': 'No hay tarifas válidas.',
+                'data': []
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+
+        datos = {
+            "email": request.data['email'],
+            "nombre":request.data['nombre'],
+            "apellido":request.data['apellido'],
+            "fechaNacimiento": request.data['fechaNacimiento'],
+            "dni" : request.data['dni'],
+            "tipoDni": request.data['tipoDni'],
+            "idTarifa": tarifa.id,
+            "idCongreso": congreso.id,
+            "fechaPago": hoy,
+            "fechaInscripcion": hoy,
+            "precioFinal": tarifa.precio
+        }
+
+        serializer = InscripcionSinCuentaSerializer(data=datos)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            # -------------------- ARMO EL MAIL ---------------------- #
+            datosInscripcion = {
+                'año': str(congreso.año),
+                'nombreCongreso': str(congreso.nombre),
+                'email': request.data['email']
+            }
+            send_mail_insc_fisica(datosInscripcion)
+            return Response({
+                'status': '200',
+                'error': '',
+                'data': serializer.data
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'status': '400',
+                'error': serializer.errors,
+                'data': []
+                }, status=status.HTTP_400_BAD_REQUEST)
+    
+    except Exception as e:
+        return Response({
+            'status': '500',
+            'error': e.args,
+            'data': []
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+
+def send_mail_insc_fisica(request):
+
+    email = request['email']
+    nombreCongreso = request['nombreCongreso']
+    año = request['año']
+
+    context = {'año':año, 'nombreCongreso': nombreCongreso}
+
+    template = get_template('inscripcion_fisica.html')
+
+    content = template.render(context)
+    correo = EmailMultiAlternatives(
+        'Inscripción Congressity',
+        '',
+        settings.EMAIL_HOST_USER,
+        [email]
+    )
+    correo.attach_alternative(content, 'text/html')
+    correo.send()
+    return True

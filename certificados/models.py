@@ -13,3 +13,4 @@ class DetalleCertificado(models.Model):
     tamañoLetra = models.IntegerField()
     posX = models.IntegerField()
     posY = models.IntegerField()
+    atributo_usuario = models.CharField(max_length=100)

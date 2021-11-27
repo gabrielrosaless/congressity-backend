@@ -110,7 +110,7 @@ def login(request):
     
     payload = {
         'id': usuario.id,
-        'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+        'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=500),
         'iat': datetime.datetime.utcnow(),
         'idCongreso':idCongreso,
         'rol': roles,

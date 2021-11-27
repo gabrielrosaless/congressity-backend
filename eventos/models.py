@@ -12,3 +12,8 @@ class Evento(models.Model):
     idAula = models.ForeignKey(Aula, on_delete=models.CASCADE, null=True)
     idSimposio = models.ForeignKey(Simposio, on_delete=models.CASCADE, null=True)
     idArticulo = models.ForeignKey(Articulo, on_delete=models.CASCADE, null=True)
+
+class CalificacionEvento(models.Model):
+    idEvento = models.ForeignKey(Evento, on_delete=models.CASCADE, null=True)
+    puntuacion = models.IntegerField()
+    calificacion = models.CharField(max_length=512)

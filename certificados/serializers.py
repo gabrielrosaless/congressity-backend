@@ -5,9 +5,9 @@ from .models import *
 class CertificadoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Certificado
-        fields = ['template', 'nombre', 'descripcion']
+        fields = ['id','template', 'nombre', 'descripcion']
 
 class DetalleCertificadoSerializer(serializers.ModelSerializer):
     class Meta:
         model = DetalleCertificado
-        fields = ['nombre', 'tipoLetra', 'tamañoLetra','posX','posY','idCerificado']
+        fields = ['nombre', 'tipoLetra', 'tamañoLetra','posX','posY','idCerificado','atributo_usuario']

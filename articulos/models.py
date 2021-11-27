@@ -93,6 +93,11 @@ class EvaluacionXEvaluador(models.Model):
     recomendacion = models.ForeignKey(EstadoEvaluacion, on_delete=models.CASCADE)
     observaciones = models.CharField(max_length=512, null=True)
 
+class EvaluacionCancelada(models.Model):
+    idArticulo = models.ForeignKey(Articulo, on_delete=models.CASCADE)
+    idUsuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    idCongreso = models.ForeignKey(Congreso, on_delete=models.CASCADE)
+    
 class ItemEvaluacionXEvaluador(models.Model):
     idEvaluacion = models.ForeignKey(ArticulosXEvaluador, on_delete=models.CASCADE)
     idItem = models.ForeignKey(ItemEvaluacion, on_delete=models.CASCADE)

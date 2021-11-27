@@ -37,6 +37,8 @@ class Congreso(models.Model):
     fechaFinInsTemprana = models.DateTimeField(null=True)
     fechaFinInsTardia = models.DateTimeField(null=True)
     fechaCierreCongreso = models.DateTimeField(null=True)
+    fechaInicioExposiciones = models.DateTimeField(null=True)
+    fechaFinExposiciones = models.DateTimeField(null=True)
     # aulas = models.ListField(null=True)  # lista de integers que apunta a la tabla aulas
     modalidad = models.CharField(null=True, max_length=240)  # Si es presencial o virtual
     is_active = models.BooleanField(default=True)

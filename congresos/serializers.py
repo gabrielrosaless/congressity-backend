@@ -26,7 +26,7 @@ class CongresoEditarSerializer(serializers.ModelSerializer):
 class CongresoCompletoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Congreso
-        fields = ['nombre','sede','año', 'chairPrincipal','coordLocal','fechaInCongreso','fechaFinCongreso','fechaLimPapers','fechaProrrogaPapers','fechaFinEvaluacion','fechaFinReEv','fechaFinInsTemprana','fechaFinInsTardia', 'fechaCierreCongreso', 'modalidad','is_active']
+        fields = ['nombre','sede','año', 'chairPrincipal','coordLocal','fechaInCongreso','fechaFinCongreso','fechaLimPapers','fechaProrrogaPapers','fechaFinEvaluacion','fechaFinReEv','fechaFinInsTemprana','fechaFinInsTardia', 'fechaCierreCongreso', 'fechaInicioExposiciones', 'fechaFinExposiciones', 'modalidad','is_active']
     
 
     def update(self, instance, validated_data):
@@ -58,7 +58,10 @@ class CongresoFechasInscripcionSerializer(serializers.ModelSerializer):
 class CongresoCompletoIdSerializer(serializers.ModelSerializer):
     class Meta:
         model = Congreso
-        fields = ['id','nombre','sede','año', 'chairPrincipal','coordLocal','fechaInCongreso','fechaFinCongreso','fechaLimPapers','fechaProrrogaPapers','fechaFinEvaluacion','fechaFinReEv','fechaFinInsTemprana','fechaFinInsTardia', 'fechaCierreCongreso','modalidad','is_active']
+        fields = ['id','nombre','sede','año', 'chairPrincipal','coordLocal','fechaInCongreso','fechaFinCongreso',
+        'fechaLimPapers','fechaProrrogaPapers','fechaFinEvaluacion','fechaFinReEv',
+        'fechaFinInsTemprana','fechaFinInsTardia', 'fechaCierreCongreso','fechaInicioExposiciones','fechaFinExposiciones',
+        'modalidad','is_active']
     
 
     def update(self, instance, validated_data):
@@ -76,6 +79,9 @@ class CongresoCompletoIdSerializer(serializers.ModelSerializer):
         instance.fechaFinReEv = validated_data.get('fechaFinReEv', instance.fechaFinReEv)
         instance.fechaFinInsTemprana = validated_data.get('fechaFinInsTemprana', instance.fechaFinInsTemprana)
         instance.fechaFinInsTardia = validated_data.get('fechaFinInsTardia', instance.fechaFinInsTardia)
+        instance.fechaCierreCongreso = validated_data.get('fechaCierreCongreso', instance.fechaCierreCongreso)
+        instance.fechaInicioExposiciones = validated_data.get('fechaInicioExposiciones', instance.fechaInicioExposiciones)
+        instance.fechaFinExposiciones = validated_data.get('fechaFinExposiciones', instance.fechaFinExposiciones)
         instance.modalidad = validated_data.get('modalidad', instance.modalidad)
         instance.is_active = validated_data.get('is_active', instance.is_active)
 
@@ -113,12 +119,15 @@ class CongresoFechasSerializer(serializers.ModelSerializer):
     fechaFinInsTemprana = serializers.DateTimeField(required=False,allow_null=True)
     fechaFinInsTardia = serializers.DateTimeField(required=False,allow_null=True)
     fechaCierreCongreso = serializers.DateTimeField(required=False,allow_null=True)
+    fechaInicioExposiciones = serializers.DateTimeField(required=False,allow_null=True)
+    fechaFinExposiciones =serializers.DateTimeField(required=False,allow_null=True)
+
 
     class Meta:
         model = Congreso
         #fields = ['id','fechaInCongreso']
         fields = ['id','fechaInCongreso','fechaFinCongreso','fechaLimPapers','fechaProrrogaPapers','fechaFinEvaluacion',
-        'fechaFinReEv','fechaFinInsTemprana','fechaFinInsTardia','fechaCierreCongreso']
+        'fechaFinReEv','fechaFinInsTemprana','fechaFinInsTardia','fechaCierreCongreso','fechaInicioExposiciones','fechaFinExposiciones']
     
     def update(self, instance, validated_data):
         instance.fechaInCongreso = validated_data.get('fechaInCongreso', instance.fechaInCongreso)
@@ -129,7 +138,9 @@ class CongresoFechasSerializer(serializers.ModelSerializer):
         instance.fechaFinReEv = validated_data.get('fechaFinReEv', instance.fechaFinReEv)     
         instance.fechaFinInsTemprana = validated_data.get('fechaFinInsTemprana', instance.fechaFinReEv)     
         instance.fechaFinInsTardia = validated_data.get('fechaFinInsTardia', instance.fechaFinReEv)        
-        instance.fechaCierreCongreso = validated_data.get('fechaCierreCongreso', instance.fechaCierreCongreso)        
+        instance.fechaCierreCongreso = validated_data.get('fechaCierreCongreso', instance.fechaCierreCongreso) 
+        instance.fechaInicioExposiciones = validated_data.get('fechaInicioExposiciones', instance.fechaInicioExposiciones) 
+        instance.fechaFinExposiciones = validated_data.get('fechaFinExposiciones', instance.fechaFinExposiciones)        
         instance.save()
         return instance
 
@@ -145,12 +156,15 @@ class CongresoFechasSerializer(serializers.ModelSerializer):
         _fechaFinInsTardia = data['fechaFinInsTardia']
         _fechaCierreCongreso = data['fechaCierreCongreso']
         _fechaFinReEv = data['fechaFinReEv']
+        _fechaInicioExposiciones = data['fechaInicioExposiciones']
+        _fechaFinExposiciones = data['fechaFinExposiciones']
         
         if ( _fechaInCongreso == None or _fechaFinCongreso == None 
             or _fechaLimPapers == None or _fechaProrrogaPapers == None
             or _fechaFinEvaluacion == None or _fechaFinInsTemprana == None 
             or _fechaFinInsTardia == None or _fechaCierreCongreso == None
-            or _fechaFinReEv == None):
+            or _fechaFinReEv == None or _fechaInicioExposiciones == None
+            or _fechaFinExposiciones == None):
             raise serializers.ValidationError("Debe completar todas las fechas del congreso.")
         
         if _fechaInCongreso > _fechaFinCongreso:
@@ -186,6 +200,10 @@ class CongresoFechasSerializer(serializers.ModelSerializer):
         if _fechaFinCongreso <= _fechaLimPapers:
             raise serializers.ValidationError("La fecha fin del congreso debe ser mayor a la fecha límite de entrega de artículos.")
 
+        if _fechaFinExposiciones <= _fechaInicioExposiciones:
+            raise serializers.ValidationError("La fecha de fin de exposiciones debe ser mayor a la fecha de inicio de exposiciones.")
+
+
         if (_fechaCierreCongreso <= _fechaInCongreso or 
             _fechaCierreCongreso <= _fechaFinCongreso or
             _fechaCierreCongreso <= _fechaLimPapers or 
@@ -193,9 +211,11 @@ class CongresoFechasSerializer(serializers.ModelSerializer):
             _fechaCierreCongreso <= _fechaFinEvaluacion or 
             _fechaCierreCongreso <= _fechaFinInsTemprana or
             _fechaCierreCongreso <= _fechaFinInsTardia or 
-            _fechaCierreCongreso <= _fechaFinReEv):
+            _fechaCierreCongreso <= _fechaFinReEv or
+            _fechaCierreCongreso <= _fechaInicioExposiciones or
+            _fechaCierreCongreso <= _fechaFinExposiciones):
             raise serializers.ValidationError("La fecha de cierre debe ser mayor a todas las demas fechas.")
-
+    
         return data
 
 class AulaSerializer(serializers.ModelSerializer):

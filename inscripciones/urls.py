@@ -23,5 +23,12 @@ urlpatterns = [
     path('pruebaMercadoPago/', pruebaMercadoPago, name="pruebaMercadoPago"),
     path('pago-inscripcion-success/', pagoInscripcionSuccess, name="pago-inscripcion-success"),
     path('devolver-tarifa/', devolverTarifaPorId, name='devolver-tarifa'),
-    path('verificar-codigoCupon/', verificarCodigoCupon, name="verificar-codigoCupon")
+    path('verificar-codigoCupon/', verificarCodigoCupon, name="verificar-codigoCupon"),
+    path('asignar-rol-ayudante/', asignarRolAyudante, name="asignar-rol-ayudante"),
+    path('aceptar-rol-ayudante/', aceptarRolAyudante, name="aceptar-rol-ayudante"),
+    path('lista-ayudantes/', devolverAyudantes, name="lista-ayudantes"),
+    path('eliminar-ayudante/', eliminarAyudante, name="eliminar-ayudante"),
+    path('crear-inscripcion-fisica/', crearInscripcionFisicaUsuario, name="crear-inscripcion-fisica"),
+    path('crear-inscripcion-sin-usuario/', crearInscripcionFisicaSinUsuario, name="crear-inscripcion-sin-usuario"),
+    path('verificar-usuario/',verificarUsuario, name="verificar-usuario")
 ]
