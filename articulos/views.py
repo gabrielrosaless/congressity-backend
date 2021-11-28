@@ -2420,7 +2420,6 @@ def getArticulosEvaluadoresCompleto(request):
 
 @swagger_auto_schema(method='get', responses={'200': ArticulosXEvaluadorSerializer ,'400': 'Error.'})
 @api_view(['GET'])
-@authentication_classes([AuthenticationChairPrincipal])
 def getArticulosCameraReady(request):
 
     token = request.headers['Authorization']
