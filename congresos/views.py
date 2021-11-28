@@ -965,7 +965,6 @@ def getSimposio(request):
 @swagger_auto_schema(method='get',manual_parameters=[openapi.Parameter('idCongreso', openapi.IN_QUERY, description="id del congreso", type=openapi.TYPE_INTEGER) ],
                     responses={'200': openapi.Response('Simposio', SimposioSerializer)})
 @api_view(['GET'])
-@authentication_classes([Authentication])
 def getSimposiosXCongreso(request):
     """
     Muestra una lista de todos los simposios de x congreso.
