@@ -201,6 +201,26 @@ def editar(request):
                 congres.año = serializer.validated_data["año"]
                 congres.chairPrincipal = serializer.validated_data["chairPrincipal"]
                 congres.coordLocal = serializer.validated_data["coordLocal"]
+                
+                #Asignar Roles a los dos administradores
+                data = {
+                    'idCongreso': congres.id,
+                    'idUsuario': usuario.id,
+                    'idRol': 1
+                }
+                serializer = RolxUsuarioxCongresoSerializer(data = data)
+                if serializer.is_valid():
+                    serializer.save()
+                    
+                if usuario.id != usuario2.id:
+                    data = {
+                        'idCongreso': congres.id,
+                        'idUsuario': usuario2.id,
+                        'idRol': 1
+                    }
+                    serializer = RolxUsuarioxCongresoSerializer(data = data)
+                if serializer.is_valid():
+                    serializer.save()
                 congres.save()
                 return Response({
                     'status': '200',
