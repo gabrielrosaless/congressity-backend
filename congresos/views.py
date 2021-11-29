@@ -2,6 +2,7 @@
 
 # from backendTesis.usuarios.authentication import AuthenticationChairPrincipal
 
+from re import S
 import sys
 from django.http.response import HttpResponse
 from .tasks import *
@@ -448,7 +449,6 @@ def listaCongresosActivos(request):
 manual_parameters=[openapi.Parameter('id', openapi.IN_QUERY, description="id", type=openapi.TYPE_INTEGER) ], 
 responses={200: CongresoCompletoSerializer })
 @api_view(['GET'])
-@authentication_classes([Authentication])
 def consultaCongreso(request):
     """
     Permite consultar un congreso en especifico.
@@ -732,6 +732,30 @@ def devolverAulas(request):
                 'data': []
             }, status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(['GET'])
+def devolverAulasxCongreso(request):
+    """  Devuelve la lista de aulas x congreso. """
+    congreso_id = request.GET['idCongreso']
+    try:
+        aulasxcongreso = AulaXCongreso.objects.filter(idAula_id=congreso_id).all()
+        data = []
+        for au in aulasxcongreso:
+            aula = Aula.objects.filter(pk=au.idAula_id).first()
+            serializer = AulaSerializer(aula)
+            data.append(serializer.data)
+        
+        return Response({
+                'status': '200',
+                'error': '',
+                'data': data
+        }, status=status.HTTP_200_OK)
+    except:
+         return Response({
+                'status': '400',
+                'error': "Error al devolver la lista de aulas.",
+                'data': []
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 

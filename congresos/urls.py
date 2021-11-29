@@ -14,6 +14,7 @@ urlpatterns = [
     path('devolver-agenda/',devolverFechasCongreso, name="devolver-agenda"),
     path('crear-aula/', crearAula, name="crear-aula"),
     path('lista-aulas/', devolverAulas, name="lista-aulas"),
+    path('lista-aulasxcongreso/', devolverAulasxCongreso, name="lista-aulasxcongreso"),
     path('editar-aula/', editarAula, name="editar-aula"),
     path('asignar-aulas/', asignarAulas, name="asignar-aulas"),
     path('eliminar-aula/', eliminarAula, name="eliminar-aula"),
