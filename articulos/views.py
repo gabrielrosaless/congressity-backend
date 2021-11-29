@@ -1499,7 +1499,7 @@ def eliminarEvaluador(request,id):
     """
     usuario = request.user
 
-    evaluador = Evaluador.objects.filter(pk=id).first()
+    evaluador = Evaluador.objects.filter(idUsuario_id=id).first()
     if evaluador is None:
         return Response({
             'status': '400',
