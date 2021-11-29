@@ -2475,10 +2475,10 @@ def getArticulosCameraReady(request):
         }, status=status.HTTP_200_OK)
         else:
             return Response({
-            'status': '400',
-            'error': 'No existen articulos en el simposio para este congreso.',
-            'data': []
-        }, status=status.HTTP_400_BAD_REQUEST)
+                'status': '200',
+                'error': '',
+                'data': []
+            }, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({
                         'status': '400',
