@@ -454,32 +454,24 @@ def consultaCongreso(request):
     Permite consultar un congreso en especifico.
     """
     try:
-        usuario = request.user
-        if usuario.is_authenticated:
-            congreso_id = request.GET['id']
-            congres = Congreso.objects.filter(id=congreso_id).first()
-            if congres != None:
-                serializer = CongresoCompletoSerializer(congres)
-                sede_nombre = Sede.objects.get(id= congres.sede).nombre
-                data = serializer.data
-                data['nombre_sede'] = sede_nombre
-                return Response({
-                    'status': '200',
-                    'error': '',
-                    'data': [data]
-                }, status=status.HTTP_200_OK)
-            else:
-                return Response({
-                        'status': '400',
-                        'error': 'No existe el congreso',
-                        'data': []
-                    }, status=status.HTTP_400_BAD_REQUEST)
+        congreso_id = request.GET['id']
+        congres = Congreso.objects.filter(id=congreso_id).first()
+        if congres != None:
+            serializer = CongresoCompletoSerializer(congres)
+            sede_nombre = Sede.objects.get(id= congres.sede).nombre
+            data = serializer.data
+            data['nombre_sede'] = sede_nombre
+            return Response({
+                'status': '200',
+                'error': '',
+                'data': [data]
+            }, status=status.HTTP_200_OK)
         else:
             return Response({
-                        'status': '400',
-                        'error': 'No tiene permisos para realizar esta accion',
-                        'data': []
-                    }, status=status.HTTP_400_BAD_REQUEST)
+                    'status': '400',
+                    'error': 'No existe el congreso',
+                    'data': []
+                }, status=status.HTTP_400_BAD_REQUEST)
     except:
         return Response({
                         'status': '400',
