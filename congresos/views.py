@@ -1297,17 +1297,20 @@ def asignarChairASimposio(request):
 @authentication_classes([AuthenticationChairPrincipal])
 def eliminarChairSecundario(request):
     """Elimina un chair secundario"""
-   
+    token = request.headers['Authorization']
+    payload = jwt.decode(token,settings.SECRET_KEY, algorithms=['HS256'])
+    
     try:
         idChair = request.data['idChair']
         idSimposio = request.data['idSimposio']
+        idCongreso = payload['idCongreso']
         simposio_lista = Simposio.objects.filter(id=idSimposio).first()
         # simposio =  SimposiosxCongreso.objects.filter(idSimposio=simposio_lista).first()
         usuario = Usuario.objects.filter(id=idChair).first()
-        chair = ChairXSimposioXCongreso.objects.filter(idSimposio=simposio_lista.id,idUsuario=usuario.id).first()
+        chair = ChairXSimposioXCongreso.objects.filter(idSimposio=simposio_lista.id,idUsuario=usuario.id, idCongreso= idCongreso).first()
         if chair != None:
             chair.delete()
-            rol = RolxUsuarioxCongreso.objects.filter(idRol=2,idUsuaro=usuario.id).first()
+            rol = RolxUsuarioxCongreso.objects.filter(idRol=2,idUsuaro=usuario.id,idCongreso=idCongreso).first()
             if rol != None:
                 rol.delete()
             return Response({
