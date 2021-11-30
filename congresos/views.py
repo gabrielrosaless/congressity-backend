@@ -1302,9 +1302,9 @@ def eliminarChairSecundario(request):
         idChair = request.data['idChair']
         idSimposio = request.data['idSimposio']
         simposio_lista = Simposio.objects.filter(id=idSimposio).first()
-        simposio =  SimposiosxCongreso.objects.filter(idSimposio=simposio_lista).first()
+        # simposio =  SimposiosxCongreso.objects.filter(idSimposio=simposio_lista).first()
         usuario = Usuario.objects.filter(id=idChair).first()
-        chair = ChairXSimposioXCongreso.objects.filter(idSimposio=simposio.id,idUsuario=usuario.id).first()
+        chair = ChairXSimposioXCongreso.objects.filter(idSimposio=simposio_lista.id,idUsuario=usuario.id).first()
         if chair != None:
             chair.delete()
             rol = RolxUsuarioxCongreso.objects.filter(idRol=2,idUsuaro=usuario.id).first()
