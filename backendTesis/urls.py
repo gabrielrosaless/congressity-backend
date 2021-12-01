@@ -20,6 +20,8 @@ from django.urls import path, include , re_path
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from django.conf.urls.static import static
+from django.conf import settings
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -46,4 +48,4 @@ urlpatterns = [
     path('certificados/', include('certificados.urls')),
     path('estadisticas/', include('estadisticas.urls')),
     path('eventos/', include('eventos.urls'))
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
