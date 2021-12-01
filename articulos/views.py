@@ -3083,12 +3083,12 @@ def realizarEntregaFinal(request):
                 'error': '',
                 'data': "Se guardo con éxito el camera ready"
             }, status=status.HTTP_200_OK)
-    except:
+    except Exception as e:
         return Response({
-                'status': '400',
-                'error': 'No se pudo guardar el CameraReady.',
+                'status': '500',
+                'error': e.args,
                 'data': []
-            }, status=status.HTTP_400_BAD_REQUEST)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
 @authentication_classes([Authentication])
