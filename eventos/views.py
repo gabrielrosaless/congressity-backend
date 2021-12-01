@@ -492,6 +492,7 @@ def getEventosPorDia(request):
     idCongreso = request.GET['idCongreso']
     fechaActual = Congreso.objects.filter(id=idCongreso).first().fechaInCongreso.date()
     datos = []
+    dia = {}
     try:
         eventos = Evento.objects.filter(idCongreso=idCongreso).all().order_by('start')
         evs = None
