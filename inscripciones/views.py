@@ -370,7 +370,6 @@ def crearInscripcion(request):
         else:
 
             datos = {
-                'id':inscripcion.id,
                 'idUsuario': usuario.id,
                 'idTarifa': inscripcion.idTarifa.id,
                 'idCongreso': payload['idCongreso'],
