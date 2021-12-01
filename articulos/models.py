@@ -42,12 +42,6 @@ class AutorXArticuloSinUsuario(models.Model):
 class Evaluador(models.Model):
     idUsuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=False)
-    # califAcumulada = models.IntegerField(default=1)
-    # califContador = models.IntegerField(default=1)
-
-    # @property 
-    # def calificacion(self):
-    #     return self.califAcumulada / self.califContador
 
 class EvaluadorXCongreso(models.Model):
     idCongreso = models.ForeignKey(Congreso, on_delete=models.CASCADE)

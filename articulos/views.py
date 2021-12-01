@@ -77,7 +77,7 @@ def realizarEntrega(request):
                 'error': 'No existe el congreso ingresado.',
                 'data': []
             }, status=status.HTTP_400_BAD_REQUEST)
-        if idSimposio == None or not (SimposiosxCongreso.objects.filter(id=idSimposio).exists()):
+        if idSimposio == None or not (SimposiosxCongreso.objects.filter(idSimposio=idSimposio,idCongreso=idCongreso).exists()):
             return Response({
                 'status': '400',
                 'error': 'No existe el simposio ingresado.',
@@ -133,10 +133,13 @@ def realizarEntrega(request):
             }, status=status.HTTP_400_BAD_REQUEST)
         file = fs.save(filename, archivo)
         file_url = filename
+        
+        simposioxcongreso = SimposiosxCongreso.objects.filter(idSimposio=idSimposio,idCongreso=idCongreso).first()
+        
         datos = {
                 "id": int(idArticulo),
                 "idCongreso": int(idCongreso),
-                "idSimposio": int(idSimposio),
+                "idSimposio": int(simposioxcongreso.id),
                 "responsable": str(responsable),
                 "nombre": str(request.data['nombre']),
                 "url": str(file_url),
@@ -289,14 +292,14 @@ def editarEntrega(request):
                 'error': 'No existe el congreso ingresado.',
                 'data': []
             }, status=status.HTTP_400_BAD_REQUEST)
-        if idSimposio == None or not (SimposiosxCongreso.objects.filter(id=idSimposio).exists()):
+        if idSimposio == None or not (SimposiosxCongreso.objects.filter(idSimposio=idSimposio,idCongreso=idCongreso).exists()):
             return Response({
                 'status': '400',
                 'error': 'No existe el simposio ingresado.',
                 'data': []
             }, status=status.HTTP_400_BAD_REQUEST)
         congreso = Congreso.objects.get(id=idCongreso)
-        simposio = SimposiosxCongreso.objects.get(id= idSimposio)
+        #simposio = SimposiosxCongreso.objects.get(id= idSimposio)
         articulo = Articulo.objects.get(id = idArticulo)
 
         token = request.headers['Authorization']
@@ -395,10 +398,11 @@ def editarEntrega(request):
                     #Enviar Mail de Validación
         AutorXArticuloSinUsuario.objects.exclude(mailUsuario__in=lista_autores_sin_reg).filter(idArticulo=idArticulo).delete()
         AutorXArticulo.objects.exclude(idUsuario__in=lista_autores_con_reg).filter(idArticulo=idArticulo).delete()
+        simposioxcongreso = SimposiosxCongreso.objects.filter(idSimposio=idSimposio,idCongreso=idCongreso).first()
         datos = {
                 "id": int(idArticulo),
                 "idCongreso": int(idCongreso),
-                "idSimposio": int(idSimposio),
+                "idSimposio": int(simposioxcongreso.id),
                 "responsable": articulo.responsable,
                 "nombre": str(request.data['nombre']),
                 "url": articulo.url,
@@ -527,7 +531,7 @@ def consultaArticuloXId(request):
             articulo = Articulo.objects.filter(id=articuloId).first()
             if articulo != None:
                 serializer = ArticuloCompletoSerializer(articulo)
-                simposio_id = SimposiosxCongreso.objects.filter(id=serializer.data['idSimposio']).first().id
+                simposio_id = SimposiosxCongreso.objects.filter(id=serializer.data['idSimposio']).first().idSimposio.id
                 simposio_nombre = Simposio.objects.get(id=simposio_id).nombre
                 congreso_nombre = Congreso.objects.get(id=serializer.data['idCongreso']).nombre
                 data = serializer.data
@@ -573,7 +577,7 @@ def consultaArticuloXResponsable(request):
         if len(articulos) > 0:
             for articulo in articulos:
                 serializer = ArticuloCompletoSerializer(articulo)
-                simposio_id = SimposiosxCongreso.objects.filter(id=serializer.data['idSimposio']).first().id
+                simposio_id = SimposiosxCongreso.objects.filter(id=serializer.data['idSimposio']).first().idSimposio.id
                 simposio_nombre = Simposio.objects.get(id=simposio_id).nombre
                 congreso_nombre = Congreso.objects.get(id=serializer.data['idCongreso']).nombre
                 estado_nombre = articulo.idEstado.nombre
@@ -946,13 +950,11 @@ def asignarRolEvaluador(request):
         if usuarioLogueado.is_authenticated: ################ ACA EN REALIDAD DEBERIA SER ROL CHAIR PRINCIPAL
             for user in usuarios:
                 usuario = Usuario.objects.filter(id=user).first()
-
+                
                 # Agrego el usuario a la tabla Evaluadores, con el campo activo en False
                 evaluador = {
                     'idUsuario':usuario.id,
-                    'is_active': False,
-                    'califAcumulada':0,
-                    'califContador':0
+                    'is_active': False
                 }
 
                 serializer = EvaluadorSerializer(data=evaluador)
@@ -2267,8 +2269,13 @@ def deleteEntrega(request):
 
         articulo = Articulo.objects.filter(responsable=usuario.email, id=idArticulo).first()
         if articulo != None:
-            os.remove(settings.MEDIA_ROOT + articulo.url)
+            autores = AutorXArticulo.objects.filter(idArticulo=idArticulo).all()
+            autores_sin_usuario = AutorXArticuloSinUsuario.objects.filter(idArticulo=idArticulo).all()
+            #Elimino el articulo y sus autores
+            autores.delete()
+            autores_sin_usuario.delete()
             articulo.delete()
+            os.remove(settings.MEDIA_ROOT + articulo.url)
             return Response({
                 'status': '200',
                 'error': 'Se elimino correctamente la entrega del articulo.',
@@ -2280,10 +2287,10 @@ def deleteEntrega(request):
                 'error': 'No se pudo eliminar el articulo.',
                 'data': []
             }, status=status.HTTP_400_BAD_REQUEST)
-    except:
+    except Exception as e:
         return Response({
             'status': '500',
-            'error': 'No se pudo eliminar el articulo.',
+            'error': e.args,
             'data': []
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
 
@@ -2297,7 +2304,7 @@ def getEvaluadoresBySimposio(request):
     """
     idChair = request.GET['idChair']
     try:
-        chair = ChairXSimposioXCongreso.objects.filter(id=idChair).first()
+        chair = SimposiosxCongreso.objects.filter(id=idChair).first()
         simposio = Simposio.objects.filter(id=chair.idSimposio.id).first()
         evaluadores = SimposiosXEvaluador.objects.filter(idSimposio=simposio.id).all()
         respuesta = []
@@ -2420,6 +2427,7 @@ def getArticulosEvaluadoresCompleto(request):
 
 @swagger_auto_schema(method='get', responses={'200': ArticulosXEvaluadorSerializer ,'400': 'Error.'})
 @api_view(['GET'])
+@authentication_classes([AuthenticationChairPrincipal])
 def getArticulosCameraReady(request):
 
     token = request.headers['Authorization']
@@ -2475,10 +2483,72 @@ def getArticulosCameraReady(request):
         }, status=status.HTTP_200_OK)
         else:
             return Response({
-                'status': '200',
-                'error': '',
-                'data': []
-            }, status=status.HTTP_200_OK)
+            'status': '400',
+            'error': 'No existen articulos en el simposio para este congreso.',
+            'data': []
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({
+                        'status': '400',
+                        'error': e.args,
+                        'data': []
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@swagger_auto_schema(method='get', responses={'200': ArticulosXEvaluadorSerializer ,'400': 'Error.'})
+@api_view(['GET'])
+def getArticulosCameraReadyPublico(request):
+
+    idCongreso = request.GET['idCongreso']
+    # chairxsimposio = ChairXSimposioXCongreso.objects.filter(idCongreso=idCongreso).filter(idUsuario=payload["id"]).first()
+    try:
+        # simposioC = SimposiosxCongreso.objects.filter(idCongreso=idCongreso,idSimposio=chairxsimposio.idSimposio).first()
+        articulos = Articulo.objects.filter(idCongreso=idCongreso).all()
+        # simposio = simposioC.idSimposio
+        if len(articulos) > 0:
+            respuesta = []
+            for art in articulos:
+                vectorAutores = []
+                autores = AutorXArticulo.objects.filter(idArticulo=art.id).all()
+                for a in autores:
+                    dataAutor = {
+                        "id": a.idUsuario.id,
+                        "nombre": a.idUsuario.nombre,
+                        "apellido": a.idUsuario.apellido,
+                        "email": a.idUsuario.email,
+                        "idSede": a.idUsuario.sede.id,
+                        "nombreSede": a.idUsuario.sede.nombre
+                    }
+                    vectorAutores.append(dataAutor)
+                if art.url_camera_ready is not None:
+                    autor = Usuario.objects.filter(email=art.responsable).first()
+                    estado = art.idEstado
+                    data = {
+                    "idArticulo": art.id,
+                    "idEstado": estado.id,
+                    "estadoArticuloNombre": estado.nombre,
+                    "estadoArticuloDescripcion": estado.descripcion,
+                    "nombreArticulo": art.nombre,
+                    "idSimposio": art.idSimposio.idSimposio.id,
+                    "nombreSimposio": art.idSimposio.idSimposio.nombre,
+                    "descSimposio": art.idSimposio.idSimposio.descripcion,
+                    "idSimposio": autor.sede.id,
+                    "sedeArticulo": autor.sede.nombre,
+                    "urlCameraReady": art.url_camera_ready,
+                    "autores": vectorAutores
+                    }
+                    respuesta.append(data)
+            return Response({
+            'status': '200',
+            'error': '',
+            'data': respuesta
+        }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+            'status': '400',
+            'error': 'No existen articulos en el simposio para este congreso.',
+            'data': []
+        }, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({
                         'status': '400',
@@ -2503,8 +2573,8 @@ def getArticulosParaEventos(request):
     idSimposio = request.GET['idSimposio']
     # chairxsimposio = ChairXSimposioXCongreso.objects.filter(idCongreso=idCongreso).filter(idUsuario=payload["id"]).first()
     try:
-        # simposioC = SimposiosxCongreso.objects.filter(idCongreso=idCongreso,idSimposio=chairxsimposio.idSimposio).first()
-        articulos = Articulo.objects.filter(idCongreso=idCongreso, idSimposio=idSimposio).all()
+        simposioC = SimposiosxCongreso.objects.filter(idCongreso=idCongreso,idSimposio=idSimposio).first()
+        articulos = Articulo.objects.filter(idCongreso=idCongreso, idSimposio=simposioC.id).all()
         # simposio = simposioC.idSimposio
         if len(articulos) > 0:
             respuesta = []
@@ -2825,7 +2895,7 @@ def getEvaluadoresFueraSimposio(request):
     idCongreso = payload['idCongreso']
     data = []
     try:
-        simposioxcongreso = ChairXSimposioXCongreso.objects.filter(idCongreso=idCongreso,idUsuario=chair).first()
+        simposioxcongreso = SimposiosxCongreso.objects.filter(idCongreso=idCongreso,idUsuario=chair).first()
         simposio = simposioxcongreso.idSimposio
         evaluadores_simposio = SimposiosXEvaluador.objects.filter(idSimposio=simposio.id).all()
         id_evitar = []
@@ -2877,11 +2947,14 @@ def getArticulosXChair(request):
     idChair = payload['id']
     idCongreso = payload['idCongreso']
     try:
-        simposio = SimposiosxCongreso.objects.filter(idCongreso=idCongreso).filter(idChair=idChair).first()
+        simposio = ChairXSimposioXCongreso.objects.filter(idCongreso=idCongreso).filter(idUsuario=idChair).first()
 
         if simposio is not None:
             simposio = simposio.idSimposio
-            articulos = Articulo.objects.filter(idCongreso=idCongreso).filter(idSimposio=simposio.id).exclude(idEstado=1).exclude(idEstado=2).exclude(idEstado=3).all()
+            simposioxcongreso = SimposiosxCongreso.objects.filter(idSimposio=simposio,idCongreso=idCongreso).first()
+            print('filtros:',idCongreso,simposioxcongreso.id)
+            articulos = Articulo.objects.filter(idCongreso=idCongreso).filter(idSimposio=simposioxcongreso.id).exclude(idEstado=1).exclude(idEstado=2).exclude(idEstado=3).all()
+            print('ARTICULOS:',articulos)
             vectorArticulos = []
             for a in articulos:
                 evaluaciones = ArticulosXEvaluador.objects.filter(idArticulo=a.id).all()
@@ -3066,7 +3139,7 @@ def getSimposiosxEvaluador(request):
 
 
 @api_view(['DELETE'])
-@authentication_classes([AuthenticationEvaluador])
+@authentication_classes([Authentication])
 def eliminarSimposioEvaluador(request):
     """
     Permite dar de baja una preferencia de simposio por parte de un evaluador.
@@ -3074,9 +3147,8 @@ def eliminarSimposioEvaluador(request):
     usuario = request.user
     idSimposio = request.GET['idSimposio']
 
-
     simposio = SimposiosXEvaluador.objects.filter(idUsuario=usuario.id, idSimposio=idSimposio).first()
-
+    
     if simposio is None:
         return Response({
             'status': '400',
@@ -3084,7 +3156,8 @@ def eliminarSimposioEvaluador(request):
             'data': []
         }, status=status.HTTP_400_BAD_REQUEST)
 
-    if usuario.is_authenticated:
+    evaluador = Evaluador.objects.filter(idUsuario=usuario.id).first()
+    if evaluador != None:
         simposio.delete()
         return Response({
             'status': '200',

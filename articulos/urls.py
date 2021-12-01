@@ -63,5 +63,6 @@ urlpatterns = [
     path('lista-evaluadoresCongreso/', devolverEvaluadoresCongreso, name="lista-evaluadoresCongreso"),
     path('es-evaluador/', esEvaluador, name="es-evaluador"),
     path('consultarArticulosCameraReady/', getArticulosCameraReady, name="consultarArticulosCameraReady"),
+    path('consultarArticulosCameraReadyPublico/', getArticulosCameraReadyPublico, name="consultarArticulosCameraReadyPublico"),
     path('consultarArticulosParaEventos/', getArticulosParaEventos, name="consultarArticulosParaEventos")
 ]

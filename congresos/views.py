@@ -2,7 +2,6 @@
 
 # from backendTesis.usuarios.authentication import AuthenticationChairPrincipal
 
-from re import S
 import sys
 from django.http.response import HttpResponse
 from .tasks import *
@@ -61,7 +60,7 @@ def crearCongreso(request):
             
             serializer = CongresoSerializer(data=request.data)
             if serializer.is_valid(raise_exception=True):
-                congres = Congreso.objects.filter(sede=serializer.validated_data["sede"], año=serializer.validated_data["año"])
+                congres = Congreso.objects.filter(sede=serializer.validated_data["sede"], año=serializer.validated_data["año"],is_active=True)
                 if congres.count() > 0:
                     return Response({
                         'status': '400',
@@ -99,7 +98,7 @@ def crearCongreso(request):
                     }, status=status.HTTP_400_BAD_REQUEST)
                 serializer.save()
                 #Asignar Roles a los dos administradores
-                congreso = Congreso.objects.filter(sede=serializer.validated_data["sede"], año=serializer.validated_data["año"]).first()
+                congreso = Congreso.objects.filter(sede=serializer.validated_data["sede"], año=serializer.validated_data["año"],is_active=True).first()
                 data = {
                     'idCongreso': congreso.id,
                     'idUsuario': usuario.id,
@@ -108,14 +107,16 @@ def crearCongreso(request):
                 serializer = RolxUsuarioxCongresoSerializer(data = data)
                 if serializer.is_valid():
                     serializer.save()
-                data = {
-                    'idCongreso': congreso.id,
-                    'idUsuario': usuario2.id,
-                    'idRol': 1
-                }
-                serializer = RolxUsuarioxCongresoSerializer(data = data)
-                if serializer.is_valid():
-                    serializer.save()
+                
+                if (usuario.id != usuario2.id):
+                    data = {
+                            'idCongreso': congreso.id,
+                            'idUsuario': usuario2.id,
+                            'idRol': 1
+                        }
+                    serializer = RolxUsuarioxCongresoSerializer(data = data)
+                    if serializer.is_valid():
+                        serializer.save()
                 return Response({
                     'status': '200',
                     'error': '',
@@ -153,7 +154,7 @@ def editar(request):
         if usuario.is_authenticated and usuario.is_superuser:
             serializer = CongresoEditarSerializer(data=request.data)
             if serializer.is_valid():
-                congres = Congreso.objects.filter(sede=serializer.validated_data["sede"], año=serializer.validated_data["año"]).first()
+                congres = Congreso.objects.filter(sede=serializer.validated_data["sede"], año=serializer.validated_data["año"],is_active=True).first()
                 if  congres == None:
                     return Response({
                         'status': '400',
@@ -161,12 +162,12 @@ def editar(request):
                         'data': []
                     }, status=status.HTTP_400_BAD_REQUEST)
 
-                if not congres.is_active:
-                    return Response({
-                        'status': '400',
-                        'error': 'El congreso no esta Activo',
-                        'data': []
-                    }, status=status.HTTP_400_BAD_REQUEST)
+                # if not congres.is_active:
+                #     return Response({
+                #         'status': '400',
+                #         'error': 'El congreso no esta Activo',
+                #         'data': []
+                #     }, status=status.HTTP_400_BAD_REQUEST)
 
                 email_chair = serializer.validated_data["chairPrincipal"]
                 email_coord = serializer.validated_data["coordLocal"]
@@ -202,27 +203,33 @@ def editar(request):
                 congres.año = serializer.validated_data["año"]
                 congres.chairPrincipal = serializer.validated_data["chairPrincipal"]
                 congres.coordLocal = serializer.validated_data["coordLocal"]
+                congres.save()
                 
                 #Asignar Roles a los dos administradores
+                congreso = Congreso.objects.filter(sede=serializer.validated_data["sede"], año=serializer.validated_data["año"],is_active=True).first()
                 data = {
-                    'idCongreso': congres.id,
+                    'idCongreso': congreso.id,
                     'idUsuario': usuario.id,
                     'idRol': 1
                 }
                 serializer = RolxUsuarioxCongresoSerializer(data = data)
                 if serializer.is_valid():
-                    serializer.save()
-                    
-                if usuario.id != usuario2.id:
+                    rol = RolxUsuarioxCongreso.objects.filter(idRol=1,idUsuario=usuario.id, idCongreso=congreso.id).first()
+                    if rol == None:
+                        serializer.save()
+                
+                if (usuario.id != usuario2.id):
                     data = {
-                        'idCongreso': congres.id,
-                        'idUsuario': usuario2.id,
-                        'idRol': 1
-                    }
+                            'idCongreso': congreso.id,
+                            'idUsuario': usuario2.id,
+                            'idRol': 1
+                        }
                     serializer = RolxUsuarioxCongresoSerializer(data = data)
-                if serializer.is_valid():
-                    serializer.save()
-                congres.save()
+                    if serializer.is_valid():
+                        rol = RolxUsuarioxCongreso.objects.filter(idRol=1,idUsuario=usuario2.id, idCongreso=congreso.id).first()
+                        if rol == None:
+                            serializer.save()
+                
                 return Response({
                     'status': '200',
                     'error': '',
@@ -449,29 +456,38 @@ def listaCongresosActivos(request):
 manual_parameters=[openapi.Parameter('id', openapi.IN_QUERY, description="id", type=openapi.TYPE_INTEGER) ], 
 responses={200: CongresoCompletoSerializer })
 @api_view(['GET'])
+@authentication_classes([Authentication])
 def consultaCongreso(request):
     """
     Permite consultar un congreso en especifico.
     """
     try:
-        congreso_id = request.GET['id']
-        congres = Congreso.objects.filter(id=congreso_id).first()
-        if congres != None:
-            serializer = CongresoCompletoSerializer(congres)
-            sede_nombre = Sede.objects.get(id= congres.sede).nombre
-            data = serializer.data
-            data['nombre_sede'] = sede_nombre
-            return Response({
-                'status': '200',
-                'error': '',
-                'data': [data]
-            }, status=status.HTTP_200_OK)
+        usuario = request.user
+        if usuario.is_authenticated:
+            congreso_id = request.GET['id']
+            congres = Congreso.objects.filter(id=congreso_id).first()
+            if congres != None:
+                serializer = CongresoCompletoSerializer(congres)
+                sede_nombre = Sede.objects.get(id= congres.sede).nombre
+                data = serializer.data
+                data['nombre_sede'] = sede_nombre
+                return Response({
+                    'status': '200',
+                    'error': '',
+                    'data': [data]
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                        'status': '400',
+                        'error': 'No existe el congreso',
+                        'data': []
+                    }, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({
-                    'status': '400',
-                    'error': 'No existe el congreso',
-                    'data': []
-                }, status=status.HTTP_400_BAD_REQUEST)
+                        'status': '400',
+                        'error': 'No tiene permisos para realizar esta accion',
+                        'data': []
+                    }, status=status.HTTP_400_BAD_REQUEST)
     except:
         return Response({
                         'status': '400',
@@ -725,30 +741,6 @@ def devolverAulas(request):
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
-def devolverAulasxCongreso(request):
-    """  Devuelve la lista de aulas x congreso. """
-    congreso_id = request.GET['idCongreso']
-    try:
-        aulasxcongreso = AulaXCongreso.objects.filter(idAula_id=congreso_id).all()
-        data = []
-        for au in aulasxcongreso:
-            aula = Aula.objects.filter(pk=au.idAula_id).first()
-            serializer = AulaSerializer(aula)
-            data.append(serializer.data)
-        
-        return Response({
-                'status': '200',
-                'error': '',
-                'data': data
-        }, status=status.HTTP_200_OK)
-    except:
-         return Response({
-                'status': '400',
-                'error': "Error al devolver la lista de aulas.",
-                'data': []
-            }, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 @swagger_auto_schema(method='post', 
@@ -1001,6 +993,7 @@ def getSimposio(request):
 @swagger_auto_schema(method='get',manual_parameters=[openapi.Parameter('idCongreso', openapi.IN_QUERY, description="id del congreso", type=openapi.TYPE_INTEGER) ],
                     responses={'200': openapi.Response('Simposio', SimposioSerializer)})
 @api_view(['GET'])
+@authentication_classes([Authentication])
 def getSimposiosXCongreso(request):
     """
     Muestra una lista de todos los simposios de x congreso.
@@ -1242,20 +1235,21 @@ def devolverChairsSimposios(request):
 @authentication_classes([AuthenticationChairPrincipal])
 def asignarChairASimposio(request):
     """
-    Asigna un chair a un simposio
+    Asigna un chair secundario a un simposio
     """    
     try:
         idCongreso = request.data['idCongreso']
         idChair = request.data['idChair']
         idSimposioData = request.data['idSimposio']
         simposio_lista = Simposio.objects.filter(id=idSimposioData).first()
-        simposio = SimposiosxCongreso.objects.filter(idSimposio=simposio_lista).first()
+        # simposio = SimposiosxCongreso.objects.filter(idSimposio=simposio_lista).first()
         data = {
             'idCongreso': idCongreso,
             'idUsuario' : idChair,
-            'idSimposio' : simposio.id
+            'idSimposio' : idSimposioData
         }
         chair = ChairXSimposioXCongreso.objects.filter(idUsuario=idChair, idSimposio=idSimposioData, idCongreso=idCongreso).first()
+
         if chair is None:
             serializer = ChairXSimposioXCongresoSerializer(data=data)
             if serializer.is_valid():
@@ -1297,22 +1291,23 @@ def asignarChairASimposio(request):
 @authentication_classes([AuthenticationChairPrincipal])
 def eliminarChairSecundario(request):
     """Elimina un chair secundario"""
+   
     token = request.headers['Authorization']
-    payload = jwt.decode(token,settings.SECRET_KEY, algorithms=['HS256'])
-    
+    payload = jwt.decode(token, settings.SECRET_KEY)
     try:
         idChair = request.data['idChair']
         idSimposio = request.data['idSimposio']
-        idCongreso = payload['idCongreso']
-        simposio_lista = Simposio.objects.filter(id=idSimposio).first()
+        simposio = Simposio.objects.filter(id=idSimposio).first()
         # simposio =  SimposiosxCongreso.objects.filter(idSimposio=simposio_lista).first()
         usuario = Usuario.objects.filter(id=idChair).first()
-        chair = ChairXSimposioXCongreso.objects.filter(idSimposio=simposio_lista.id,idUsuario=usuario.id, idCongreso= idCongreso).first()
+        chair = ChairXSimposioXCongreso.objects.filter(idSimposio=simposio.id,idUsuario=usuario.id,idCongreso=payload['idCongreso']).first()
         if chair != None:
             chair.delete()
-            rol = RolxUsuarioxCongreso.objects.filter(idRol=2,idUsuaro=usuario.id,idCongreso=idCongreso).first()
-            if rol != None:
-                rol.delete()
+            chairxsimposio = ChairXSimposioXCongreso.objects.filter(idUsuario=usuario.id,idCongreso=payload['idCongreso']).first()
+            if chairxsimposio == None:
+                rol = RolxUsuarioxCongreso.objects.filter(idUsuario=idChair, idRol=2, idCongreso=payload['idCongreso']).first()
+                if rol != None:
+                    rol.delete()
             return Response({
                 'status': '200',
                 'error': '',
@@ -1589,7 +1584,7 @@ def eliminarSede(request):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
-    if usuario.is_authenticated and usuario.is_superuser:
+    if usuario.is_authenticated:
         sede.delete()
         return Response({
                 'status': '200',

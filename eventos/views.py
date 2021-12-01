@@ -21,6 +21,8 @@ from django.db import connection
 from django.template.loader import get_template
 from django.core.mail import EmailMultiAlternatives
 import io
+from decouple import config
+
 
 # Create your views here.
 @api_view(['POST'])
@@ -79,8 +81,8 @@ def crearEvento(request):
                 'data': []
             }, status=status.HTTP_400_BAD_REQUEST)
         else:
-            s = SimposiosxCongreso.objects.filter(idSimposio=idSimposio, idCongreso=congreso.id).first()
-            if s is None:
+            simpxcongreso = SimposiosxCongreso.objects.filter(idSimposio=idSimposio, idCongreso=congreso.id).first()
+            if simpxcongreso is None:
                 return Response({
                     'status': '400',
                     'error': 'El simposio no pertence al congreso.',
@@ -101,7 +103,7 @@ def crearEvento(request):
                 'error': 'El artículo no pertence al congreso.',
                 'data': []
             }, status=status.HTTP_400_BAD_REQUEST)
-        elif articulo.idSimposio.id != int(idSimposio):
+        elif articulo.idSimposio.id != int(simpxcongreso.id):
             return Response({
                 'status': '400',
                 'error': 'El artículo no pertence al simposio.',
@@ -489,7 +491,6 @@ def getEventosPorDia(request):
 
     idCongreso = request.GET['idCongreso']
     fechaActual = Congreso.objects.filter(id=idCongreso).first().fechaInCongreso.date()
-    print(fechaActual)
     datos = []
     try:
         eventos = Evento.objects.filter(idCongreso=idCongreso).all().order_by('start')
@@ -551,6 +552,7 @@ def getQrAulas(request):
         with connection.cursor() as cursor:
             cursor.execute('''
                            SELECT distinct "idAula_id" FROM public.eventos_evento
+                           WHERE "idAula_id" IS NOT NULL
                            ''')
             rows = cursor.fetchall()
             cursor.close()
@@ -558,13 +560,14 @@ def getQrAulas(request):
         codigos_aulas = []
         nombres_aulas = []
         for i in rows:
+            # URL_FRONT/proximoEvento/idCongreso/idAula
             idAula = i[0]
             aula = Aula.objects.filter(id=idAula).first()
             nombres_aulas.append(aula.nombre)
-            current_site = get_current_site(request).domain
-            relative_link = reverse('proximo-evento')
+            relative_link= 'proximoEvento/'
+            current_site=  config('URL_FRONT_DEV')
             url= 'http://' + current_site + relative_link
-            url = url + "?idAula=" + str(idAula) + "&idCongreso=" + str(idCongreso)
+            url = url +  str(idCongreso) + "/" + str(idAula)
             qr = qrcode.QRCode(
                 version = 1,
                 error_correction = qrcode.constants.ERROR_CORRECT_H,
@@ -623,11 +626,13 @@ def getProximoEventoAula(request):
         data = []
         for i in rows:
             simposio = Simposio.objects.filter(id=i[5]).first()
+            aula = Aula.objects.filter(id=idAula).first()
             datos = {
                 "Titulo": i[1],
                 "Contenido":i[2],
                 "Inicio": i[3],
                 "Fin":i[4],
+                "Aula": aula.nombre,
                 "Simposio":simposio.nombre
             }
             data.append(datos)
