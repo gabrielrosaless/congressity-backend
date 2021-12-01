@@ -2895,7 +2895,7 @@ def getEvaluadoresFueraSimposio(request):
     idCongreso = payload['idCongreso']
     data = []
     try:
-        simposioxcongreso = SimposiosxCongreso.objects.filter(idCongreso=idCongreso,idChair=chair).first()
+        simposioxcongreso = ChairXSimposioXCongreso.objects.filter(idCongreso=idCongreso,idUsuario=chair).first()
         simposio = simposioxcongreso.idSimposio
         evaluadores_simposio = SimposiosXEvaluador.objects.filter(idSimposio=simposio.id).all()
         id_evitar = []
