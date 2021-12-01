@@ -2910,7 +2910,7 @@ def getEvaluadoresFueraSimposio(request):
             for evaluador in evaluadores:
                 print(evaluador.id)
                 datos = {
-                    "idEvaluador":evaluador.id,
+                    "idEvaluador":evaluador.idUsuario.id,
                     "nombreEv": evaluador.idUsuario.nombre,
                     "apellidoEv": evaluador.idUsuario.apellido
                 }
