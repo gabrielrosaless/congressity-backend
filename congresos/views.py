@@ -740,7 +740,29 @@ def devolverAulas(request):
                 'data': []
             }, status=status.HTTP_400_BAD_REQUEST)
 
-
+@api_view(['GET'])
+def devolverAulasxCongreso(request):
+    """ Devuelve la lista completa de aulas. """
+    id_congreso = request.GET['idCongreso']
+    try:
+        aulasxcongreso = AulaXCongreso.objects.filter(idCongreso=id_congreso).all()
+        data = []
+        if aulasxcongreso != None:
+            for aulaxcon in aulasxcongreso:
+                aula = Aula.objects.filter(id=aulaxcon.idAula.id, is_active=True).first()
+                serializer = AulaSerializer(aula)
+                data.append(serializer.data)
+        return Response({
+                'status': '200',
+                'error': '',
+                'data': data
+            }, status=status.HTTP_200_OK)
+    except Exception as e:
+         return Response({
+                'status': '400',
+                'error': e.args,
+                'data': []
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 @swagger_auto_schema(method='post', 
