@@ -25,6 +25,7 @@ import base64
 from io import BytesIO
 from django.forms.models import model_to_dict
 from django.http import FileResponse
+from tempfile import TemporaryFile
 
 @api_view(['POST'])
 def crearCertificado(request):
@@ -287,7 +288,7 @@ def PruebaCertificadoParametrizado(request):
         datos = request.data["datos"]
         if len(datos) > 0:
             for detalles in datos:
-                font = ImageFont.truetype(detalles["tipoLetra"],detalles["tamañoLetra"])
+                font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados\\fonts\\" + str(detalles["tipoLetra"])), size=detalles["tamañoLetra"])
                 draw = ImageDraw.Draw(img)
                 draw.text(xy=(detalles["posX"],detalles["posY"]),text='{}'.format(detalles["valor"]),fill=(0,0,0),font=font)
         
@@ -355,15 +356,19 @@ def crearCertificadoMasivo(request):
                 usuario = Usuario.objects.filter(id=asistente.idUsuario.id).first()
                 datos_usuario = model_to_dict(usuario)
                 img = Image.open(template_asistentes)
-                nombre = "Certificado_Asistente_"  + str(usuario.id) + "_" + str(idCongreso)
+                nombre = "Certificado_Asistente_"  + str(usuario.id) + "_" + str(idCongreso) + ".png"
                 archivo = settings.CERTIFICADOS_CARPETA + nombre
                 detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoAsistentes).all()
                 if len(detalles) > 0:
                     for detalle in detalles:
-                        font = ImageFont.truetype(detalle.tipoLetra,detalle.tamañoLetra)
+                        font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados\\fonts\\" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
                         draw = ImageDraw.Draw(img)
                         draw.text(xy=(detalle.posX,detalle.posY),text='{}'.format(datos_usuario[detalle.atributo_usuario]),fill=(0,0,0),font=font)
-                    img.save('{}.jpg'.format(archivo))
+                    fp = TemporaryFile()
+                    img.save(fp, "PNG")
+                    fs = FileSystemStorage()
+                    if not fs.exists(nombre):
+                        file = fs.save(nombre, fp)
                     res = send_mail_certificado(str(archivo) + ".jpg",str(nombre) + ".jpg",'Asistente',usuario.id)
                     
         ##########################  ASISTENTES SIN CUENTA ################################
@@ -374,15 +379,19 @@ def crearCertificadoMasivo(request):
             for asistente in asistentes_sin_cuenta:
                 datos_usuario = model_to_dict(asistente)
                 img = Image.open(template_asistentes_sin_cuenta)
-                nombre = "Certificado_Asistente_" + str(asistente.dni) + "_" + str(idCongreso)
+                nombre = "Certificado_Asistente_" + str(asistente.dni) + "_" + str(idCongreso) + ".png"
                 archivo = settings.CERTIFICADOS_CARPETA + nombre
                 detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoAsistentes).all()
                 if len(detalles) > 0:
                     for detalle in detalles:
-                        font = ImageFont.truetype(detalle.tipoLetra,detalle.tamañoLetra)
+                        font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados\\fonts\\" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
                         draw = ImageDraw.Draw(img)
                         draw.text(xy=(detalle.posX,detalle.posY),text='{}'.format(datos_usuario[detalle.atributo_usuario]),fill=(0,0,0),font=font)
-                    img.save('{}.jpg'.format(archivo))
+                    fp = TemporaryFile()
+                    img.save(fp, "PNG")
+                    fs = FileSystemStorage()
+                    if not fs.exists(nombre):
+                        file = fs.save(nombre, fp)
                     res = send_mail_certificado_sin_cuenta(str(archivo) + ".jpg",str(nombre) + ".jpg",'Asistente',asistente.email)
 
         ##########################  AUTORES ################################
@@ -395,15 +404,19 @@ def crearCertificadoMasivo(request):
                 usuario = Usuario.objects.filter(id=autor.id).first()
                 datos_usuario = model_to_dict(usuario)
                 img = Image.open(template_autores)
-                nombre = "Certificado_Autor"  + str(usuario.id) + "_" + str(idCongreso)
+                nombre = "Certificado_Autor"  + str(usuario.id) + "_" + str(idCongreso) + ".png"
                 archivo = settings.CERTIFICADOS_CARPETA + nombre
                 detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoAutores).all()
                 if len(detalles) > 0:
                     for detalle in detalles:
-                        font = ImageFont.truetype(detalle.tipoLetra,detalle.tamañoLetra)
+                        font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados\\fonts\\" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
                         draw = ImageDraw.Draw(img)
                         draw.text(xy=(detalle.posX,detalle.posY),text='{}'.format(datos_usuario[detalle.atributo_usuario]),fill=(0,0,0),font=font)
-                    img.save('{}.jpg'.format(archivo))
+                    fp = TemporaryFile()
+                    img.save(fp, "PNG")
+                    fs = FileSystemStorage()
+                    if not fs.exists(nombre):
+                        file = fs.save(nombre, fp)
                     res = send_mail_certificado(str(archivo) + ".jpg",str(nombre) + ".jpg",'Autor',usuario.id)
         
         ##########################  CHAIR PPAL ################################
@@ -414,15 +427,19 @@ def crearCertificadoMasivo(request):
         usuario = Usuario.objects.filter(email=chair).first()
         datos_usuario = model_to_dict(usuario)
         img = Image.open(template_chairppal)
-        nombre = "Certificado_Chair_Ppal_" + str(usuario.id) + "_" + str(idCongreso)
+        nombre = "Certificado_Chair_Ppal_" + str(usuario.id) + "_" + str(idCongreso) + ".png"
         archivo = settings.CERTIFICADOS_CARPETA + nombre
         detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoChairPpal).all()
         if len(detalles) > 0:
             for detalle in detalles:
-                font = ImageFont.truetype(detalle.tipoLetra,detalle.tamañoLetra)
+                font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados\\fonts\\" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
                 draw = ImageDraw.Draw(img)
                 draw.text(xy=(detalle.posX,detalle.posY),text='{}'.format(datos_usuario[detalle.atributo_usuario]),fill=(0,0,0),font=font)
-            img.save('{}.jpg'.format(archivo))
+            fp = TemporaryFile()
+            img.save(fp, "PNG")
+            fs = FileSystemStorage()
+            if not fs.exists(nombre):
+                file = fs.save(nombre, fp)
             res = send_mail_certificado(str(archivo) + ".jpg",str(nombre) + ".jpg",'Chair Principal',usuario.id)
 
         ##########################  CHAIR SECUNDARIO ################################
@@ -435,15 +452,19 @@ def crearCertificadoMasivo(request):
                 usuario = Usuario.objects.filter(id=chair.idUsuario.id).first()
                 datos_usuario = model_to_dict(usuario)
                 img = Image.open(template_chairsecundario)
-                nombre = "Certificado_Chair_Secun_"  + str(usuario.id) + "_" + str(idCongreso)
+                nombre = "Certificado_Chair_Secun_"  + str(usuario.id) + "_" + str(idCongreso) + ".png"
                 archivo = settings.CERTIFICADOS_CARPETA + nombre
                 detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoCharSec).all()
                 if len(detalles) > 0:
                     for detalle in detalles:
-                        font = ImageFont.truetype(detalle.tipoLetra,detalle.tamañoLetra)
+                        font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados\\fonts\\" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
                         draw = ImageDraw.Draw(img)
                         draw.text(xy=(detalle.posX,detalle.posY),text='{}'.format(datos_usuario[detalle.atributo_usuario]),fill=(0,0,0),font=font)
-                    img.save('{}.jpg'.format(archivo))
+                    fp = TemporaryFile()
+                    img.save(fp, "PNG")
+                    fs = FileSystemStorage()
+                    if not fs.exists(nombre):
+                        file = fs.save(nombre, fp)
                     res = send_mail_certificado(str(archivo) + ".jpg",str(nombre) + ".jpg",'Chair Secundario',usuario.id)
         
         ##########################  EVALUADORES ################################
@@ -456,15 +477,19 @@ def crearCertificadoMasivo(request):
                 usuario = Usuario.objects.filter(id=evaluador.idUsuario.id).first()
                 datos_usuario = model_to_dict(usuario)
                 img = Image.open(template_evaluador)
-                nombre = "Certificado_Evaluador_"  + str(usuario.id) + "_" + str(idCongreso)
+                nombre = "Certificado_Evaluador_"  + str(usuario.id) + "_" + str(idCongreso) + ".png"
                 archivo = settings.CERTIFICADOS_CARPETA + nombre
                 detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoEvaluadores).all()
                 if len(detalles) > 0:
                     for detalle in detalles:
-                        font = ImageFont.truetype(detalle.tipoLetra,detalle.tamañoLetra)
+                        font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados\\fonts\\" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
                         draw = ImageDraw.Draw(img)
                         draw.text(xy=(detalle.posX,detalle.posY),text='{}'.format(datos_usuario[detalle.atributo_usuario]),fill=(0,0,0),font=font)
-                    img.save('{}.jpg'.format(archivo))
+                    fp = TemporaryFile()
+                    img.save(fp, "PNG")
+                    fs = FileSystemStorage()
+                    if not fs.exists(nombre):
+                        file = fs.save(nombre, fp)
                     res = send_mail_certificado(str(archivo) + ".jpg",str(nombre) + ".jpg",'Evaluador',usuario.id)
         
         ##########################  EXPOSITOR ################################
@@ -477,15 +502,19 @@ def crearCertificadoMasivo(request):
                 usuario = Usuario.objects.filter(id=autor.id).first()
                 datos_usuario = model_to_dict(usuario)
                 img = Image.open(template_expositores)
-                nombre = "Certificado_Expositor_"  + str(usuario.id) + "_" + str(idCongreso)
+                nombre = "Certificado_Expositor_"  + str(usuario.id) + "_" + str(idCongreso) + ".png"
                 archivo = settings.CERTIFICADOS_CARPETA + nombre
                 detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoAutores).all()
                 if len(detalles) > 0:
                     for detalle in detalles:
-                        font = ImageFont.truetype(detalle.tipoLetra,detalle.tamañoLetra)
+                        font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados\\fonts\\" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
                         draw = ImageDraw.Draw(img)
                         draw.text(xy=(detalle.posX,detalle.posY),text='{}'.format(datos_usuario[detalle.atributo_usuario]),fill=(0,0,0),font=font)
-                    img.save('{}.jpg'.format(archivo))
+                    fp = TemporaryFile()
+                    img.save(fp, "PNG")
+                    fs = FileSystemStorage()
+                    if not fs.exists(nombre):
+                        file = fs.save(nombre, fp)
                     res = send_mail_certificado(str(archivo) + ".jpg",str(nombre) + ".jpg",'Expositor',usuario.id)
         
         return Response({

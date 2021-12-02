@@ -18,6 +18,7 @@ import datetime as date_mails
 from django.template.loader import get_template
 from django.core.mail import EmailMultiAlternatives
 from usuarios.serializers import *
+from tempfile import TemporaryDirectory, TemporaryFile
 
 # SDK de Mercado Pago
 import mercadopago
@@ -803,8 +804,8 @@ def send_mail_entrada(request, idInscripcion):
         qr.make(fit=True)
         img = qr.make_image()
         nombre_archivo = str(idCongreso) + str(idUsuario) + ".png"
-        archivo = settings.MEDIA_ROOT + nombre_archivo
-        img.save(archivo)
+        fp = TemporaryFile()
+        img.save(fp,"PNG")
         context = {'data_imagen': nombre_archivo}
         template = get_template('entrada_congreso.html')
         content = template.render(context)
@@ -815,8 +816,8 @@ def send_mail_entrada(request, idInscripcion):
             [usuario.email]
         )
         correo.attach_alternative(content, 'text/html')
-        with open(archivo, 'rb') as f:
-            img_data = f.read()
+        fp.seek(0)
+        img_data = fp.read()
         correo.attach("Entrada_Congreso.png", img_data, 'image/png')
         correo.send()
         return Response({
