@@ -555,14 +555,15 @@ def devolverReporteEventos(request):
         data = []
         with connection.cursor() as cursor:
             cursor.execute('''
-        select e.content,au.nombre,e.start,e.end,a.nombre,s.nombre,e.title,(sum(c.puntuacion) / count(c."idEvento_id")) as "Promedio" from public.eventos_calificacionevento c
-        inner join public.eventos_evento e on (e.id = c."idEvento_id")
-        inner join public.articulos_articulo a on (a.id = e."idArticulo_id")
-        inner join public.congresos_simposio s on (s.id = e."idSimposio_id")
-        inner join public.congresos_aula au on (au.id = e."idAula_id")
-        where e."idCongreso_id" = ''' + idCongreso + '''
-        group by c."idEvento_id",s.nombre,e.title,a.nombre,e.start,e.end,au.nombre,e.content
-        order by "Promedio" desc ''' )
+        select e.content,au.nombre,e.start,e.end,a.nombre,s.nombre,e.title,(sum(c.puntuacion) / count(c."idEvento_id")) as "Promedio" 
+        from public.eventos_evento e
+            left join public.eventos_calificacionevento c on (e.id = c."idEvento_id")
+            left join public.articulos_articulo a on (a.id = e."idArticulo_id")
+            left join public.congresos_simposio s on (s.id = e."idSimposio_id")
+            left join public.congresos_aula au on (au.id = e."idAula_id")
+            where e."idCongreso_id" = ''' + idCongreso + '''
+            group by c."idEvento_id",s.nombre,e.title,a.nombre,e.start,e.end,au.nombre,e.content
+            order by "Promedio" desc ''' )
             rows = cursor.fetchall()
             cursor.close()
         data = []
