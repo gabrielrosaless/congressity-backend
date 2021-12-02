@@ -491,11 +491,16 @@ def getEventosPorDia(request):
 
     idCongreso = request.GET['idCongreso']
     fechaActual = Congreso.objects.filter(id=idCongreso).first().fechaInCongreso.date()
-    datos = []
-    dia = {}
+    datos = [] 
     try:
         eventos = Evento.objects.filter(idCongreso=idCongreso).all().order_by('start')
         evs = None
+        if eventos is None:
+            return Response({
+                'status': '200',
+                'error': '',
+                'data': []
+            }, status=status.HTTP_200_OK)
         for e in eventos:
             if e.start.date() > fechaActual:
                 if evs is not None:
@@ -508,20 +513,30 @@ def getEventosPorDia(request):
                 evs = []
 
             expositores = []
-            autores = AutorXArticulo.objects.filter(idArticulo=e.idArticulo.id).all()
-            for a in autores:
-                nombre = a.idUsuario.nombre + ' ' + a.idUsuario.apellido
-                expositores.append(nombre)
+            if e.idArticulo is None:
+                evento = {
+                    'nombre': e.title,
+                    'horarioInicio': e.start.time(),
+                    'horarioFin': e.end.time(),
+                    'aula': "",
+                    'expositores': []
+                }
+                evs.append(evento)
+            else:
+                autores = AutorXArticulo.objects.filter(idArticulo=e.idArticulo.id).all()
+                for a in autores:
+                    nombre = a.idUsuario.nombre + ' ' + a.idUsuario.apellido
+                    expositores.append(nombre)
 
-            evento = {
-                'nombre': e.title,
-                'horarioInicio': e.start.time(),
-                'horarioFin': e.end.time(),
-                'aula': e.idAula.nombre,
-                'expositores': expositores
-            }
+                evento = {
+                    'nombre': e.title,
+                    'horarioInicio': e.start.time(),
+                    'horarioFin': e.end.time(),
+                    'aula': e.idAula.nombre,
+                    'expositores': expositores
+                }
 
-            evs.append(evento)
+                evs.append(evento)
         dia["eventos"] = evs
         datos.append(dia)
         return Response({

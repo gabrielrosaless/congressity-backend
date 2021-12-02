@@ -1110,7 +1110,7 @@ def verificarUsuario(request):
 @authentication_classes([AuthenticationAyudante])
 def crearInscripcionFisicaUsuario(request):
     """ Inscripcion fisica para usuario que posee cuenta en el sistema. """
-    
+
     user_email = request.data['email']
     token = request.headers['Authorization']
     payload = jwt.decode(token, settings.SECRET_KEY)
@@ -1121,7 +1121,7 @@ def crearInscripcionFisicaUsuario(request):
         usuario = Usuario.objects.filter(email=user_email).first()
         congreso = Congreso.objects.filter(id=payload['idCongreso']).first()
 
-        #Valido inscripcion 
+        #Valido inscripcion
         inscripcion = Inscripcion.objects.filter(idUsuario=usuario.id, idCongreso = congreso.id).first()
         if inscripcion is not None:
             return Response({
@@ -1129,7 +1129,7 @@ def crearInscripcionFisicaUsuario(request):
                     'error': 'El usuario ya está inscripto.',
                     'data': []
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         tarifas = Tarifa.objects.filter(idCongreso=congreso.id).all()
         tarifa = None
         for tar in tarifas:
@@ -1142,7 +1142,7 @@ def crearInscripcionFisicaUsuario(request):
                 'error': 'No hay tarifas válidas.',
                 'data': []
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         datos = {
             'idUsuario': usuario.id,
             'idTarifa': tarifa.id,
@@ -1177,7 +1177,7 @@ def crearInscripcionFisicaUsuario(request):
                 'error': serializer.errors,
                 'data': []
                 }, status=status.HTTP_400_BAD_REQUEST)
-    
+
     except Exception as e:
         return Response({
             'status': '500',
@@ -1190,11 +1190,11 @@ def crearInscripcionFisicaUsuario(request):
 @authentication_classes([AuthenticationAyudante])
 def crearInscripcionFisicaSinUsuario(request):
     """ Inscripcion fisica para usuario que NO posee cuenta en el sistema. """
-    
+
     token = request.headers['Authorization']
     payload = jwt.decode(token, settings.SECRET_KEY)
     hoy = datetime.now()
-    
+
 
     try:
         congreso = Congreso.objects.filter(id=payload['idCongreso']).first()
@@ -1217,7 +1217,7 @@ def crearInscripcionFisicaSinUsuario(request):
                 'error': 'No hay tarifas válidas.',
                 'data': []
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
 
         datos = {
             "email": request.data['email'],
@@ -1256,14 +1256,14 @@ def crearInscripcionFisicaSinUsuario(request):
                 'error': serializer.errors,
                 'data': []
                 }, status=status.HTTP_400_BAD_REQUEST)
-    
+
     except Exception as e:
         return Response({
             'status': '500',
             'error': e.args,
             'data': []
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
 
 
 def send_mail_insc_fisica(request):
