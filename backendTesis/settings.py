@@ -169,6 +169,6 @@ REST_FRAMEWORK = {
 
 MEDIA_ROOT = os.path.join(BASE_DIR , 'articulos/papers/') # directorio de papers
 MEDIA_URL = 'articulos/papers/'
-INSCRIPCIONES_CARPETA = os.path.join(BASE_DIR , 'uploads/inscripciones/')
-CERTIFICADOS_CARPETA = os.path.join(BASE_DIR , 'uploads/certificados/')
-CERTIFICADOS_TEMPLATES = os.path.join(BASE_DIR , 'uploads/templates/')
+INSCRIPCIONES_CARPETA = os.path.join(BASE_DIR , 'inscripciones\\congresos\\')
+CERTIFICADOS_CARPETA = os.path.join(BASE_DIR , 'certificados\\archivos\\')
+CERTIFICADOS_TEMPLATES = os.path.join(BASE_DIR , 'certificados\\templates\\')
