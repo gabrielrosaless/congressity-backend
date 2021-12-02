@@ -368,7 +368,6 @@ def crearInscripcion(request):
                 'data': []
             }, status=status.HTTP_200_OK)
         else:
-
             datos = {
                 'idUsuario': usuario.id,
                 'idTarifa': inscripcion.idTarifa.id,
@@ -380,10 +379,12 @@ def crearInscripcion(request):
             }
             serializer = InscripcionSerializer(data=datos)
             if serializer.is_valid():
+                res =  serializer.data
+                res['id'] = inscripcion.id
                 return Response({
-                        'status': '200',
-                        'error': '',
-                        'data': serializer.data
+                    'status': '200',
+                    'error': '',
+                    'data': res
                 }, status=status.HTTP_200_OK)
 
     congreso = Congreso.objects.filter(id=payload['idCongreso']).first()
