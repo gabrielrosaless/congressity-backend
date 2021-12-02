@@ -250,10 +250,10 @@ def devolverReporteEvaluadores(request):
     try:
         idCongreso = request.GET['idCongreso']
         
-        evaluadores = EvaluadorXCongreso.objects.filter(idCongreso=idCongreso).all()
+        evaluadores = EvaluadorXCongresoXChair.objects.filter(idCongreso=idCongreso).all()
         data = []
         for evaluador in evaluadores:
-            usuario = Usuario.objects.filter(id=evaluador.idUsuario.id).first()
+            usuario = Usuario.objects.filter(id=evaluador.idEvaluador.id).first()
             cantidad_evaluaciones = ArticulosXEvaluador.objects.filter(idUsuario=usuario.id).count()
             cantidad_canceladas = EvaluacionCancelada.objects.filter(idUsuario=usuario.id,idCongreso=idCongreso).count()
             sede = Sede.objects.filter(id=usuario.sede.id).first()
