@@ -17,6 +17,7 @@ import qrcode
 import datetime as date_mails
 from django.template.loader import get_template
 from django.core.mail import EmailMultiAlternatives
+from usuarios.serializers import *
 
 # SDK de Mercado Pago
 import mercadopago
@@ -909,6 +910,7 @@ def asignarRolAyudante(request):
             payload = {
                 'email': email,
                 'idUsuario':usuario.id,
+                'idCongreso':id_congreso,
                 'exp' : datetime.utcnow() + timedelta(days=15),
                 'iat': datetime.utcnow()
             }
@@ -981,6 +983,17 @@ def aceptarRolAyudante(request):
         if ayudante != None:
             ayudante.is_active = True
             ayudante.save()
+            # Asigno el rol de ayudante
+            rolxusuario = RolxUsuarioxCongreso.objects.filter(idCongreso=payload['idCongreso'],idUsuario=payload['idUsuario'],idRol=5).first()
+            if rolxusuario == None:
+                data = {
+                    'idCongreso': payload['idCongreso'],
+                    'idUsuario': payload['idUsuario'],
+                    'idRol': 5
+                }
+                serializer = RolxUsuarioxCongresoSerializer(data=data)
+                if serializer.is_valid():
+                    serializer.save()
             return Response({'error': False, 'mensaje': 'Se acepto correcamente el rol de ayudante.'}, status=status.HTTP_200_OK)
         else:
             return Response({'error': True, 'mensaje': 'El usuario no se encuentra solicitado como ayudante o no existe.'}, status=status.HTTP_400_BAD_REQUEST)
