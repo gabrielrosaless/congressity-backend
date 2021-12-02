@@ -64,7 +64,7 @@ def registrar(request):
         mail = usuario.email
         relative_link= 'cuentaConfirmada/'
         current_site= config('URL_FRONT_DEV')
-        url_envio = 'http://' + current_site + relative_link + token
+        url_envio = current_site + relative_link + token
         data = {'email': mail, 'link': url_envio}
         res = send_mail(data)
 
