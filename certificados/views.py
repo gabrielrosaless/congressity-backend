@@ -282,7 +282,7 @@ def PruebaCertificadoParametrizado(request):
     try:
         idCertificado = request.data["idCertificado"]
         certificado = Certificado.objects.filter(id=idCertificado).first()
-        template = os.path.join(settings.BASE_DIR , "articulos\\papers\\" +certificado.template)
+        template = os.path.join(settings.BASE_DIR , "articulos/papers/" +certificado.template)
         img = Image.open(template)
         datos = request.data["datos"]
         if len(datos) > 0:
