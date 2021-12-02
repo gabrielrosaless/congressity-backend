@@ -288,7 +288,7 @@ def PruebaCertificadoParametrizado(request):
         datos = request.data["datos"]
         if len(datos) > 0:
             for detalles in datos:
-                font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados\\fonts\\" + str(detalles["tipoLetra"])), size=detalles["tamañoLetra"])
+                font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados/fonts/" + str(detalles["tipoLetra"])), size=detalles["tamañoLetra"])
                 draw = ImageDraw.Draw(img)
                 draw.text(xy=(detalles["posX"],detalles["posY"]),text='{}'.format(detalles["valor"]),fill=(0,0,0),font=font)
         
