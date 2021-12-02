@@ -361,7 +361,7 @@ def crearCertificadoMasivo(request):
                 detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoAsistentes).all()
                 if len(detalles) > 0:
                     for detalle in detalles:
-                        font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados\\fonts\\" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
+                        font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados/fonts/" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
                         draw = ImageDraw.Draw(img)
                         draw.text(xy=(detalle.posX,detalle.posY),text='{}'.format(datos_usuario[detalle.atributo_usuario]),fill=(0,0,0),font=font)
                     fp = TemporaryFile()
@@ -384,7 +384,7 @@ def crearCertificadoMasivo(request):
                 detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoAsistentes).all()
                 if len(detalles) > 0:
                     for detalle in detalles:
-                        font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados\\fonts\\" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
+                        font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados/fonts/" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
                         draw = ImageDraw.Draw(img)
                         draw.text(xy=(detalle.posX,detalle.posY),text='{}'.format(datos_usuario[detalle.atributo_usuario]),fill=(0,0,0),font=font)
                     fp = TemporaryFile()
@@ -409,7 +409,7 @@ def crearCertificadoMasivo(request):
                 detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoAutores).all()
                 if len(detalles) > 0:
                     for detalle in detalles:
-                        font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados\\fonts\\" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
+                        font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados/fonts/" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
                         draw = ImageDraw.Draw(img)
                         draw.text(xy=(detalle.posX,detalle.posY),text='{}'.format(datos_usuario[detalle.atributo_usuario]),fill=(0,0,0),font=font)
                     fp = TemporaryFile()
@@ -432,7 +432,7 @@ def crearCertificadoMasivo(request):
         detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoChairPpal).all()
         if len(detalles) > 0:
             for detalle in detalles:
-                font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados\\fonts\\" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
+                font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados/fonts/" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
                 draw = ImageDraw.Draw(img)
                 draw.text(xy=(detalle.posX,detalle.posY),text='{}'.format(datos_usuario[detalle.atributo_usuario]),fill=(0,0,0),font=font)
             fp = TemporaryFile()
@@ -457,7 +457,7 @@ def crearCertificadoMasivo(request):
                 detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoCharSec).all()
                 if len(detalles) > 0:
                     for detalle in detalles:
-                        font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados\\fonts\\" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
+                        font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados/fonts/" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
                         draw = ImageDraw.Draw(img)
                         draw.text(xy=(detalle.posX,detalle.posY),text='{}'.format(datos_usuario[detalle.atributo_usuario]),fill=(0,0,0),font=font)
                     fp = TemporaryFile()
@@ -482,7 +482,7 @@ def crearCertificadoMasivo(request):
                 detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoEvaluadores).all()
                 if len(detalles) > 0:
                     for detalle in detalles:
-                        font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados\\fonts\\" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
+                        font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados/fonts/" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
                         draw = ImageDraw.Draw(img)
                         draw.text(xy=(detalle.posX,detalle.posY),text='{}'.format(datos_usuario[detalle.atributo_usuario]),fill=(0,0,0),font=font)
                     fp = TemporaryFile()
@@ -507,7 +507,7 @@ def crearCertificadoMasivo(request):
                 detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoAutores).all()
                 if len(detalles) > 0:
                     for detalle in detalles:
-                        font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados\\fonts\\" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
+                        font = ImageFont.truetype(font = os.path.join(settings.BASE_DIR , "certificados/fonts/" + str(detalle.tipoLetra)), size=detalle.tamañoLetra)
                         draw = ImageDraw.Draw(img)
                         draw.text(xy=(detalle.posX,detalle.posY),text='{}'.format(datos_usuario[detalle.atributo_usuario]),fill=(0,0,0),font=font)
                     fp = TemporaryFile()
