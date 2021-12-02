@@ -164,7 +164,7 @@ def realizarEntrega(request):
             # current_site = get_current_site(request).domain
             relative_link = 'cancelarAutoria/'
             registro_link = 'login' #reverse('registrar')
-            url_registrar = 'http://' + current_site + registro_link
+            url_registrar = current_site + registro_link
             for autor in autores:
                 if not Usuario.objects.filter(email=autor).exists():
                     ## -------------------ENVIO DE MAIL--------------------------------##
@@ -176,7 +176,7 @@ def realizarEntrega(request):
                     }
 
                     token = jwt.encode(payload, settings.SECRET_KEY , algorithm='HS256').decode('utf-8')
-                    url_envio = 'http://' + current_site + relative_link + token
+                    url_envio = current_site + relative_link + token
 
                     datosInvitacion = {
                         'nombreArticulo': str(request.data['nombre']),
@@ -209,7 +209,7 @@ def realizarEntrega(request):
                     }
 
                     token = jwt.encode(payload, settings.SECRET_KEY , algorithm='HS256').decode('utf-8')
-                    url_envio = 'http://' + current_site + relative_link + token
+                    url_envio = current_site + relative_link + token
 
                     datosInvitacion = {
                         'nombreArticulo': str(request.data['nombre']),
@@ -756,9 +756,9 @@ def probar_mail(request):
         }
 
     token = jwt.encode(payload, settings.SECRET_KEY , algorithm='HS256').decode('utf-8')
-    url_envio = 'http://' + current_site + relative_link + "?token=" + token
+    url_envio = current_site + relative_link + "?token=" + token
 
-    url_registrar = 'http://' + current_site + registro_link
+    url_registrar = current_site + registro_link
     data = {'nombreArticulo': nombre,'email':email ,'link': url_envio, 'linkRegistrar':url_registrar}
 
     send_mail_invitacion(data)
@@ -979,8 +979,8 @@ def asignarRolEvaluador(request):
 
                 token = jwt.encode(payload, settings.SECRET_KEY , algorithm='HS256').decode('utf-8')
 
-                url_aceptacion = 'http://' + current_site + link_aceptar + token
-                url_rechazo = 'http://' + current_site + link_rechazar + token
+                url_aceptacion = current_site + link_aceptar + token
+                url_rechazo = current_site + link_rechazar + token
 
                 data = {'email':email ,'url_aceptacion': url_aceptacion, 'url_rechazo':url_rechazo}
 
@@ -1245,8 +1245,8 @@ def asignarArticuloEvaluador(request):
                     'iat': datetime.datetime.utcnow()
                     }
                 token = jwt.encode(payload, settings.SECRET_KEY , algorithm='HS256').decode('utf-8')
-                url_envio = 'http://' + current_site + relative_link + token
-                url_aceptar = 'http://' + current_site + aceptar_link + token
+                url_envio = current_site + relative_link + token
+                url_aceptar = current_site + aceptar_link + token
                 congre = Congreso.objects.filter(id=idCongreso).first()
                 usuario = Usuario.objects.filter(id=idEvaluador).first()
                 datosInvitacion = {
@@ -2691,8 +2691,8 @@ def asignarArticuloEvaluadorMasivo(request):
                     'iat': datetime.datetime.utcnow()
                 }
                 token = jwt.encode(payload, settings.SECRET_KEY , algorithm='HS256').decode('utf-8')
-                url_envio = 'http://' + current_site + relative_link + token
-                url_aceptar = 'http://' + current_site + aceptar_link + token
+                url_envio = current_site + relative_link + token
+                url_aceptar = current_site + aceptar_link + token
                 congre = Congreso.objects.filter(id=idCongreso).first()
                 usuario = Usuario.objects.filter(id=idEvaluador).first()
                 datosInvitacion = {

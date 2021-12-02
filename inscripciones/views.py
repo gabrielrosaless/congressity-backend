@@ -668,9 +668,9 @@ def create_preference(request):
     relative_link_success = 'pagoInscripcionSuccess'
     relative_link_failure = 'pagoInscripcionFailure'
     relate_link_pending = 'pagoInscripcionPending'
-    url_success = 'http://' + current_site + relative_link_success + "/" + tokenInscripcion
-    url_failure = 'http://' + current_site + relative_link_failure + "/" + tokenInscripcion
-    url_pending = 'http://' + current_site + relate_link_pending + "/" + tokenInscripcion
+    url_success = current_site + relative_link_success + "/" + tokenInscripcion
+    url_failure = current_site + relative_link_failure + "/" + tokenInscripcion
+    url_pending = current_site + relate_link_pending + "/" + tokenInscripcion
 
     # Crea un ítem en la preferencia
     preference_data = {
@@ -790,7 +790,7 @@ def send_mail_entrada(request, idInscripcion):
         token = jwt.encode(payload, settings.SECRET_KEY , algorithm='HS256').decode('utf-8')
         current_site = get_current_site(request).domain
         relative_link = reverse('registrar-asistencia')
-        url= 'http://' + current_site + relative_link
+        url= current_site + relative_link
         url = url + "?token=" + token
         qr = qrcode.QRCode(
             version = 1,
@@ -915,7 +915,7 @@ def asignarRolAyudante(request):
 
             token = jwt.encode(payload, settings.SECRET_KEY , algorithm='HS256').decode('utf-8')
 
-            url_aceptacion = 'http://' + current_site + link_aceptar + token
+            url_aceptacion = current_site + link_aceptar + token
             data = {'email':email ,'url_aceptacion': url_aceptacion}
 
             send_mail_ayudante(data)

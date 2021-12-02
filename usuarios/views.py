@@ -315,7 +315,7 @@ def reenviarmailactivacion(request):
     current_site = get_current_site(request).domain
     mail = usuario.email
     relative_link = reverse('email-verify')
-    url_envio = 'http://' + current_site + relative_link + "?token=" + token
+    url_envio = current_site + relative_link + "?token=" + token
     data = {'email': mail, 'link': url_envio}
     res = send_mail(data)
     return Response({'OK': 'Se envió el correo de activacion'}, status=status.HTTP_200_OK)
@@ -466,7 +466,7 @@ def enviarMailRestablecerContraseña(request):
             mail = usuario.email            
             relative_link = 'reestablecerContraseña/'
             current_site= config('URL_FRONT_DEV')
-            url_envio = 'http://' + current_site + relative_link + token
+            url_envio = current_site + relative_link + token
             data = {'email': mail, 'link': url_envio}
             res = send_mail_restablecer_contraseña(data)
             return Response({

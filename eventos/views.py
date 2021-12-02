@@ -567,7 +567,7 @@ def getQrAulas(request):
             nombres_aulas.append(aula.nombre)
             relative_link= 'proximoEvento/'
             current_site=  config('URL_FRONT_DEV')
-            url= 'http://' + current_site + relative_link
+            url= current_site + relative_link
             url = url +  str(idCongreso) + "/" + str(idAula)
             qr = qrcode.QRCode(
                 version = 1,
