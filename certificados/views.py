@@ -348,7 +348,7 @@ def crearCertificadoMasivo(request):
         
         ##########################  ASISTENTES ################################
         certificado_asistentes = Certificado.objects.filter(id=idCertificadoAsistentes).first()
-        template_asistentes = os.path.join(settings.BASE_DIR , "certificados\\templates\\" + certificado_asistentes.template)
+        template_asistentes = os.path.join(settings.BASE_DIR , "articulos/papers/" + certificado_asistentes.template)
         asistentes = Inscripcion.objects.filter(idCongreso=idCongreso,asistio=True).all()
         if len(asistentes) > 0:
             for asistente in asistentes:
@@ -368,7 +368,7 @@ def crearCertificadoMasivo(request):
                     
         ##########################  ASISTENTES SIN CUENTA ################################
         certificado_asistentes = Certificado.objects.filter(id=idCertificadoAsistentes).first()
-        template_asistentes_sin_cuenta = os.path.join(settings.BASE_DIR , "certificados\\templates\\" + certificado_asistentes.template)
+        template_asistentes_sin_cuenta = os.path.join(settings.BASE_DIR , "articulos/papers/" + certificado_asistentes.template)
         asistentes_sin_cuenta = InscripcionSinCuenta.objects.filter(idCongreso=idCongreso,asistio=True).all()
         if len(asistentes_sin_cuenta) > 0:
             for asistente in asistentes_sin_cuenta:
@@ -387,7 +387,7 @@ def crearCertificadoMasivo(request):
 
         ##########################  AUTORES ################################
         certificado_autores = Certificado.objects.filter(id=idCertificadoAutores).first()
-        template_autores = os.path.join(settings.BASE_DIR , "certificados\\templates\\" +certificado_autores.template)
+        template_autores = os.path.join(settings.BASE_DIR , "articulos/papers/" +certificado_autores.template)
         autores = AutorXArticulo.objects.filter(idArticulo__idCongreso=idCongreso).all()
         data = []
         if len(autores) > 0:
@@ -408,7 +408,7 @@ def crearCertificadoMasivo(request):
         
         ##########################  CHAIR PPAL ################################
         certificado_chairppal = Certificado.objects.filter(id=idCertificadoChairPpal).first()
-        template_chairppal = os.path.join(settings.BASE_DIR , "certificados\\templates\\" +certificado_chairppal.template)
+        template_chairppal = os.path.join(settings.BASE_DIR , "articulos/papers/" +certificado_chairppal.template)
         congreso = Congreso.objects.filter(id=idCongreso).first()
         chair = congreso.chairPrincipal
         usuario = Usuario.objects.filter(email=chair).first()
@@ -427,7 +427,7 @@ def crearCertificadoMasivo(request):
 
         ##########################  CHAIR SECUNDARIO ################################
         certificado_chairsecundario = Certificado.objects.filter(id=idCertificadoCharSec).first()
-        template_chairsecundario = os.path.join(settings.BASE_DIR , "certificados\\templates\\" +certificado_chairsecundario.template)
+        template_chairsecundario = os.path.join(settings.BASE_DIR , "articulos/papers/" +certificado_chairsecundario.template)
         chairSecundarios = ChairXSimposioXCongreso.objects.filter(idCongreso=idCongreso).all()
         data = []
         if len(chairSecundarios) > 0:
@@ -448,7 +448,7 @@ def crearCertificadoMasivo(request):
         
         ##########################  EVALUADORES ################################
         certificado_evaluador = Certificado.objects.filter(id=idCertificadoEvaluadores).first()
-        template_evaluador = os.path.join(settings.BASE_DIR , "certificados\\templates\\" +certificado_evaluador.template)
+        template_evaluador = os.path.join(settings.BASE_DIR , "articulos/papers/" +certificado_evaluador.template)
         evaluadores = EvaluadorXCongreso.objects.filter(idCongreso=idCongreso).all()
         data = []
         if len(evaluadores) > 0:
@@ -469,7 +469,7 @@ def crearCertificadoMasivo(request):
         
         ##########################  EXPOSITOR ################################
         certificado_expositores = Certificado.objects.filter(id=idCertificadoExpositores).first()
-        template_expositores = os.path.join(settings.BASE_DIR , "certificados\\templates\\" +certificado_expositores.template)
+        template_expositores = os.path.join(settings.BASE_DIR , "articulos/papers/" +certificado_expositores.template)
         autores = AutorXArticulo.objects.filter(idUsuario__id__in=Inscripcion.objects.values_list('idUsuario', flat=True),idArticulo__idCongreso=idCongreso, idArticulo__idEstado__in=[5,6]).all()
         data = []
         if len(autores) > 0:

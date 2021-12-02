@@ -803,7 +803,7 @@ def send_mail_entrada(request, idInscripcion):
         qr.make(fit=True)
         img = qr.make_image()
         nombre_archivo = str(idCongreso) + str(idUsuario) + ".png"
-        archivo = settings.INSCRIPCIONES_CARPETA + nombre_archivo
+        archivo = settings.MEDIA_ROOT + nombre_archivo
         img.save(archivo)
         context = {'data_imagen': nombre_archivo}
         template = get_template('entrada_congreso.html')
