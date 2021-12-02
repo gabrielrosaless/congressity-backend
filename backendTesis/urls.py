@@ -49,3 +49,6 @@ urlpatterns = [
     path('estadisticas/', include('estadisticas.urls')),
     path('eventos/', include('eventos.urls'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
++ static(settings.INSCRIPCIONES_CARPETA, document_root=settings.MEDIA_ROOT)
++ static(settings.CERTIFICADOS_CARPETA, document_root=settings.MEDIA_ROOT)
++ static(settings.CERTIFICADOS_TEMPLATES, document_root=settings.MEDIA_ROOT)
