@@ -86,7 +86,7 @@ def crearCertificadoParametrizado(request):
 def altaCertificado(request):
     usuario = request.user
     myfile = request.FILES['archivo']
-    fs = FileSystemStorage(settings.CERTIFICADOS_TEMPLATES)
+    fs = FileSystemStorage()
     filename = fs.save(myfile.name, myfile)  # saves the file to `media` folder
     url = fs.url(filename)
     datos = {
@@ -282,7 +282,7 @@ def PruebaCertificadoParametrizado(request):
     try:
         idCertificado = request.data["idCertificado"]
         certificado = Certificado.objects.filter(id=idCertificado).first()
-        template = os.path.join(settings.BASE_DIR , "certificados\\templates\\" +certificado.template)
+        template = os.path.join(settings.BASE_DIR , "articulos\\papers\\" +certificado.template)
         img = Image.open(template)
         datos = request.data["datos"]
         if len(datos) > 0:
@@ -322,7 +322,7 @@ def getArchivoTemplate(request):
             'data': []
         }, status=status.HTTP_400_BAD_REQUEST)
         url = certificado.template
-        url_completa = settings.CERTIFICADOS_TEMPLATES + url
+        url_completa = settings.MEDIA_ROOT + url
         archivo = open(url_completa, 'rb')
         response = FileResponse(archivo)
         return response
