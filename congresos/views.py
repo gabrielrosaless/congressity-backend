@@ -456,38 +456,29 @@ def listaCongresosActivos(request):
 manual_parameters=[openapi.Parameter('id', openapi.IN_QUERY, description="id", type=openapi.TYPE_INTEGER) ], 
 responses={200: CongresoCompletoSerializer })
 @api_view(['GET'])
-@authentication_classes([Authentication])
 def consultaCongreso(request):
     """
     Permite consultar un congreso en especifico.
     """
     try:
-        usuario = request.user
-        if usuario.is_authenticated:
-            congreso_id = request.GET['id']
-            congres = Congreso.objects.filter(id=congreso_id).first()
-            if congres != None:
-                serializer = CongresoCompletoSerializer(congres)
-                sede_nombre = Sede.objects.get(id= congres.sede).nombre
-                data = serializer.data
-                data['nombre_sede'] = sede_nombre
-                return Response({
-                    'status': '200',
-                    'error': '',
-                    'data': [data]
-                }, status=status.HTTP_200_OK)
-            else:
-                return Response({
-                        'status': '400',
-                        'error': 'No existe el congreso',
-                        'data': []
-                    }, status=status.HTTP_400_BAD_REQUEST)
+        congreso_id = request.GET['id']
+        congres = Congreso.objects.filter(id=congreso_id).first()
+        if congres != None:
+            serializer = CongresoCompletoSerializer(congres)
+            sede_nombre = Sede.objects.get(id= congres.sede).nombre
+            data = serializer.data
+            data['nombre_sede'] = sede_nombre
+            return Response({
+                'status': '200',
+                'error': '',
+                'data': [data]
+            }, status=status.HTTP_200_OK)
         else:
             return Response({
-                        'status': '400',
-                        'error': 'No tiene permisos para realizar esta accion',
-                        'data': []
-                    }, status=status.HTTP_400_BAD_REQUEST)
+                    'status': '400',
+                    'error': 'No existe el congreso',
+                    'data': []
+                }, status=status.HTTP_400_BAD_REQUEST)
     except:
         return Response({
                         'status': '400',
@@ -744,18 +735,21 @@ def devolverAulas(request):
 def devolverAulasxCongreso(request):
     """ Devuelve la lista completa de aulas. """
     id_congreso = request.GET['idCongreso']
+    congreso = Congreso.objects.filter(id=id_congreso).first()
+    
     try:
-        aulasxcongreso = AulaXCongreso.objects.filter(idCongreso=id_congreso).all()
+        aulas = Aula.objects.filter(sede=congreso.sede).all()
         data = []
-        if aulasxcongreso != None:
-            for aulaxcon in aulasxcongreso:
-                aula = Aula.objects.filter(id=aulaxcon.idAula.id, is_active=True).first()
-                serializer = AulaSerializer(aula)
-                data.append(serializer.data)
+        if aulas != None:
+            # for a in aulas:
+            #     aula = Aula.objects.filter(id=a.id, is_active=True).first()
+            #     serializer = AulaSerializer(aula)
+            #     data.append(serializer.data)
+            serializer = AulaSerializer(aulas, many=True)
         return Response({
                 'status': '200',
                 'error': '',
-                'data': data
+                'data': serializer.data
             }, status=status.HTTP_200_OK)
     except Exception as e:
          return Response({
@@ -1015,7 +1009,6 @@ def getSimposio(request):
 @swagger_auto_schema(method='get',manual_parameters=[openapi.Parameter('idCongreso', openapi.IN_QUERY, description="id del congreso", type=openapi.TYPE_INTEGER) ],
                     responses={'200': openapi.Response('Simposio', SimposioSerializer)})
 @api_view(['GET'])
-@authentication_classes([Authentication])
 def getSimposiosXCongreso(request):
     """
     Muestra una lista de todos los simposios de x congreso.
