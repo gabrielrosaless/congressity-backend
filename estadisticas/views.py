@@ -425,10 +425,10 @@ def devolverEvaluadoresCancelacionesGeneral(request):
             'error': '',
             'data': data
         }, status=status.HTTP_200_OK)
-    except:
+    except Exception as e:
         return Response({
             'status': '400',
-            'error': "Error.",
+            'error': e.args,
             'data': []
         }, status=status.HTTP_400_BAD_REQUEST)
 

@@ -790,10 +790,9 @@ def send_mail_entrada(request, idInscripcion):
                 'iat': date_mails.datetime.utcnow()
             }
         token = jwt.encode(payload, settings.SECRET_KEY , algorithm='HS256').decode('utf-8')
-        current_site = get_current_site(request).domain
-        relative_link = reverse('registrar-asistencia')
-        url= current_site + relative_link
-        url = url + "?token=" + token
+        current_site = config('URL_FRONT_DEV')
+        relative_link = 'verificarEntrada/'
+        url= current_site + relative_link + token
         qr = qrcode.QRCode(
             version = 1,
             error_correction = qrcode.constants.ERROR_CORRECT_H,

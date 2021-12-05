@@ -446,7 +446,6 @@ def devolverTiposDNI(request):
     serializer = TipoDniSerializer(tiposDNI, many=True)
     return Response(serializer.data)
 
-
 @api_view(['POST'])
 def enviarMailRestablecerContraseña(request):
     """
