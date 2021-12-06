@@ -359,7 +359,7 @@ def crearCertificadoMasivo(request):
                 datos_usuario = model_to_dict(usuario)
                 img = Image.open(template_asistentes)
                 nombre = "Certificado_Asistente_"  + str(usuario.id) + "_" + str(idCongreso) + ".png"
-                archivo = settings.CERTIFICADOS_CARPETA + nombre
+                # archivo = settings.CERTIFICADOS_CARPETA + nombre
                 detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoAsistentes).all()
                 if len(detalles) > 0:
                     for detalle in detalles:
@@ -371,7 +371,7 @@ def crearCertificadoMasivo(request):
                     fs = FileSystemStorage()
                     if not fs.exists(nombre):
                         file = fs.save(nombre, fp)
-                    res = send_mail_certificado(str(archivo) + ".jpg",str(nombre) + ".jpg",'Asistente',usuario.id)
+                    res = send_mail_certificado(str(nombre) ,str(nombre),'Asistente',usuario.id)
                     
         ##########################  ASISTENTES SIN CUENTA ################################
         mensaje = "Asistentes sin cuenta"
@@ -383,7 +383,7 @@ def crearCertificadoMasivo(request):
                 datos_usuario = model_to_dict(asistente)
                 img = Image.open(template_asistentes_sin_cuenta)
                 nombre = "Certificado_Asistente_" + str(asistente.dni) + "_" + str(idCongreso) + ".png"
-                archivo = settings.CERTIFICADOS_CARPETA + nombre
+                # archivo = settings.CERTIFICADOS_CARPETA + nombre
                 detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoAsistentes).all()
                 if len(detalles) > 0:
                     for detalle in detalles:
@@ -395,7 +395,7 @@ def crearCertificadoMasivo(request):
                     fs = FileSystemStorage()
                     if not fs.exists(nombre):
                         file = fs.save(nombre, fp)
-                    res = send_mail_certificado_sin_cuenta(str(archivo) + ".jpg",str(nombre) + ".jpg",'Asistente',asistente.email)
+                    res = send_mail_certificado_sin_cuenta(str(nombre) ,str(nombre),'Asistente',asistente.email)
 
         ##########################  AUTORES ################################
         mensaje = "Autores"
@@ -408,7 +408,7 @@ def crearCertificadoMasivo(request):
                 datos_usuario = model_to_dict(usuario)
                 img = Image.open(template_autores)
                 nombre = "Certificado_Autor"  + str(usuario.id) + "_" + str(idCongreso) + ".png"
-                archivo = settings.CERTIFICADOS_CARPETA + nombre
+                # archivo = settings.CERTIFICADOS_CARPETA + nombre
                 detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoAutores).all()
                 if len(detalles) > 0:
                     for detalle in detalles:
@@ -420,7 +420,7 @@ def crearCertificadoMasivo(request):
                     fs = FileSystemStorage()
                     if not fs.exists(nombre):
                         file = fs.save(nombre, fp)
-                    res = send_mail_certificado(str(archivo) + ".jpg",str(nombre) + ".jpg",'Autor',usuario.id)
+                    res = send_mail_certificado(str(nombre) ,str(nombre),'Autor',usuario.id)
         
         ##########################  CHAIR PPAL ################################
         mensaje = "CP"
@@ -432,7 +432,7 @@ def crearCertificadoMasivo(request):
         datos_usuario = model_to_dict(usuario)
         img = Image.open(template_chairppal)
         nombre = "Certificado_Chair_Ppal_" + str(usuario.id) + "_" + str(idCongreso) + ".png"
-        archivo = settings.CERTIFICADOS_CARPETA + nombre
+        # archivo = settings.CERTIFICADOS_CARPETA + nombre
         detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoChairPpal).all()
         if len(detalles) > 0:
             for detalle in detalles:
@@ -444,7 +444,7 @@ def crearCertificadoMasivo(request):
             fs = FileSystemStorage()
             if not fs.exists(nombre):
                 file = fs.save(nombre, fp)
-            res = send_mail_certificado(str(archivo) + ".jpg",str(nombre) + ".jpg",'Chair Principal',usuario.id)
+            res = send_mail_certificado(str(nombre) ,str(nombre),'Chair Principal',usuario.id)
 
         ##########################  CHAIR SECUNDARIO ################################
         mensaje = "CS"
@@ -458,7 +458,7 @@ def crearCertificadoMasivo(request):
                 datos_usuario = model_to_dict(usuario)
                 img = Image.open(template_chairsecundario)
                 nombre = "Certificado_Chair_Secun_"  + str(usuario.id) + "_" + str(idCongreso) + ".png"
-                archivo = settings.CERTIFICADOS_CARPETA + nombre
+                # archivo = settings.CERTIFICADOS_CARPETA + nombre
                 detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoCharSec).all()
                 if len(detalles) > 0:
                     for detalle in detalles:
@@ -470,7 +470,7 @@ def crearCertificadoMasivo(request):
                     fs = FileSystemStorage()
                     if not fs.exists(nombre):
                         file = fs.save(nombre, fp)
-                    res = send_mail_certificado(str(archivo) + ".jpg",str(nombre) + ".jpg",'Chair Secundario',usuario.id)
+                    res = send_mail_certificado(str(nombre) ,str(nombre) ,'Chair Secundario',usuario.id)
         
         ##########################  EVALUADORES ################################
         mensaje = "Ev"
@@ -484,7 +484,7 @@ def crearCertificadoMasivo(request):
                 datos_usuario = model_to_dict(usuario)
                 img = Image.open(template_evaluador)
                 nombre = "Certificado_Evaluador_"  + str(usuario.id) + "_" + str(idCongreso) + ".png"
-                archivo = settings.CERTIFICADOS_CARPETA + nombre
+                # archivo = settings.CERTIFICADOS_CARPETA + nombre
                 detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoEvaluadores).all()
                 if len(detalles) > 0:
                     for detalle in detalles:
@@ -496,7 +496,7 @@ def crearCertificadoMasivo(request):
                     fs = FileSystemStorage()
                     if not fs.exists(nombre):
                         file = fs.save(nombre, fp)
-                    res = send_mail_certificado(str(archivo) + ".jpg",str(nombre) + ".jpg",'Evaluador',usuario.id)
+                    res = send_mail_certificado(str(nombre) ,str(nombre) ,'Evaluador',usuario.id)
         
         ##########################  EXPOSITOR ################################
         mensaje = "Ex"
@@ -510,7 +510,7 @@ def crearCertificadoMasivo(request):
                 datos_usuario = model_to_dict(usuario)
                 img = Image.open(template_expositores)
                 nombre = "Certificado_Expositor_"  + str(usuario.id) + "_" + str(idCongreso) + ".png"
-                archivo = settings.CERTIFICADOS_CARPETA + nombre
+                # archivo = settings.CERTIFICADOS_CARPETA + nombre
                 detalles = DetalleCertificado.objects.filter(idCerificado=idCertificadoAutores).all()
                 if len(detalles) > 0:
                     for detalle in detalles:
@@ -522,7 +522,7 @@ def crearCertificadoMasivo(request):
                     fs = FileSystemStorage()
                     if not fs.exists(nombre):
                         file = fs.save(nombre, fp)
-                    res = send_mail_certificado(str(archivo) + ".jpg",str(nombre) + ".jpg",'Expositor',usuario.id)
+                    res = send_mail_certificado(str(nombre),str(nombre) ,'Expositor',usuario.id)
         
         return Response({
             'status': '200',
@@ -538,7 +538,7 @@ def crearCertificadoMasivo(request):
 
 def send_mail_certificado(archivo,nombre_archivo, tipo, idUsuario):
     try:
-        print(archivo,nombre_archivo, tipo, idUsuario)
+        archivo = settings.MEDIA_ROOT + archivo
         usuario = Usuario.objects.filter(id=idUsuario).first()
         context = {'data_imagen': nombre_archivo, 'rol':tipo}
         template = get_template('certificado_congreso.html')
@@ -552,7 +552,7 @@ def send_mail_certificado(archivo,nombre_archivo, tipo, idUsuario):
         correo.attach_alternative(content, 'text/html')
         with open(archivo, 'rb') as f:
             img_data = f.read()
-        correo.attach("Certificado_Congreso.png", img_data, 'image/jpg')
+        correo.attach("Certificado_Congreso.png", img_data, 'image/png')
         correo.send()
         return True
     except Exception as e:
@@ -560,6 +560,7 @@ def send_mail_certificado(archivo,nombre_archivo, tipo, idUsuario):
     
 def send_mail_certificado_sin_cuenta(archivo,nombre_archivo, tipo, correo_usuario):
     try:
+        archivo = settings.MEDIA_ROOT + archivo
         context = {'data_imagen': nombre_archivo, 'rol':tipo}
         template = get_template('certificado_congreso.html')
         content = template.render(context) 
@@ -572,7 +573,7 @@ def send_mail_certificado_sin_cuenta(archivo,nombre_archivo, tipo, correo_usuari
         correo.attach_alternative(content, 'text/html')
         with open(archivo, 'rb') as f:
             img_data = f.read()
-        correo.attach("Certificado_Congreso.png", img_data, 'image/jpg')
+        correo.attach("Certificado_Congreso.png", img_data, 'image/png')
         correo.send()
         return True
     except Exception as e:
