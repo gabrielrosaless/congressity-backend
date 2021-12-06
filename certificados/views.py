@@ -533,7 +533,7 @@ def crearCertificadoMasivo(request):
     except Exception as e:
         return Response({
             'status': '400',
-            'error': e.args + "|| " + mensaje ,
+            'error': str(e.args) + "|| " + mensaje ,
             'data': []
         }, status=status.HTTP_400_BAD_REQUEST)
 
