@@ -338,6 +338,7 @@ def getArchivoTemplate(request):
 @api_view(['POST'])
 @authentication_classes([Authentication])
 def crearCertificadoMasivo(request):
+    mensaje = ""
     try:
         idCongreso = request.data["idCongreso"]
         idCertificadoAsistentes = request.data["idCertificadoAsistentes"]
@@ -348,6 +349,7 @@ def crearCertificadoMasivo(request):
         idCertificadoExpositores = request.data["idCertificadoExpositores"]
         
         ##########################  ASISTENTES ################################
+        mensaje = "Asistentes"
         certificado_asistentes = Certificado.objects.filter(id=idCertificadoAsistentes).first()
         template_asistentes = os.path.join(settings.BASE_DIR , "articulos/papers/" + certificado_asistentes.template)
         asistentes = Inscripcion.objects.filter(idCongreso=idCongreso,asistio=True).all()
@@ -372,6 +374,7 @@ def crearCertificadoMasivo(request):
                     res = send_mail_certificado(str(archivo) + ".jpg",str(nombre) + ".jpg",'Asistente',usuario.id)
                     
         ##########################  ASISTENTES SIN CUENTA ################################
+        mensaje = "Asistentes sin cuenta"
         certificado_asistentes = Certificado.objects.filter(id=idCertificadoAsistentes).first()
         template_asistentes_sin_cuenta = os.path.join(settings.BASE_DIR , "articulos/papers/" + certificado_asistentes.template)
         asistentes_sin_cuenta = InscripcionSinCuenta.objects.filter(idCongreso=idCongreso,asistio=True).all()
@@ -395,6 +398,7 @@ def crearCertificadoMasivo(request):
                     res = send_mail_certificado_sin_cuenta(str(archivo) + ".jpg",str(nombre) + ".jpg",'Asistente',asistente.email)
 
         ##########################  AUTORES ################################
+        mensaje = "Autores"
         certificado_autores = Certificado.objects.filter(id=idCertificadoAutores).first()
         template_autores = os.path.join(settings.BASE_DIR , "articulos/papers/" +certificado_autores.template)
         autores = AutorXArticulo.objects.filter(idArticulo__idCongreso=idCongreso).all()
@@ -420,6 +424,7 @@ def crearCertificadoMasivo(request):
                     res = send_mail_certificado(str(archivo) + ".jpg",str(nombre) + ".jpg",'Autor',usuario.id)
         
         ##########################  CHAIR PPAL ################################
+        mensaje = "CP"
         certificado_chairppal = Certificado.objects.filter(id=idCertificadoChairPpal).first()
         template_chairppal = os.path.join(settings.BASE_DIR , "articulos/papers/" +certificado_chairppal.template)
         congreso = Congreso.objects.filter(id=idCongreso).first()
@@ -443,6 +448,7 @@ def crearCertificadoMasivo(request):
             res = send_mail_certificado(str(archivo) + ".jpg",str(nombre) + ".jpg",'Chair Principal',usuario.id)
 
         ##########################  CHAIR SECUNDARIO ################################
+        mensaje = "CS"
         certificado_chairsecundario = Certificado.objects.filter(id=idCertificadoCharSec).first()
         template_chairsecundario = os.path.join(settings.BASE_DIR , "articulos/papers/" +certificado_chairsecundario.template)
         chairSecundarios = ChairXSimposioXCongreso.objects.filter(idCongreso=idCongreso).all()
@@ -468,6 +474,7 @@ def crearCertificadoMasivo(request):
                     res = send_mail_certificado(str(archivo) + ".jpg",str(nombre) + ".jpg",'Chair Secundario',usuario.id)
         
         ##########################  EVALUADORES ################################
+        mensaje = "Ev"
         certificado_evaluador = Certificado.objects.filter(id=idCertificadoEvaluadores).first()
         template_evaluador = os.path.join(settings.BASE_DIR , "articulos/papers/" +certificado_evaluador.template)
         evaluadores = EvaluadorXCongreso.objects.filter(idCongreso=idCongreso).all()
@@ -493,6 +500,7 @@ def crearCertificadoMasivo(request):
                     res = send_mail_certificado(str(archivo) + ".jpg",str(nombre) + ".jpg",'Evaluador',usuario.id)
         
         ##########################  EXPOSITOR ################################
+        mensaje = "Ex"
         certificado_expositores = Certificado.objects.filter(id=idCertificadoExpositores).first()
         template_expositores = os.path.join(settings.BASE_DIR , "articulos/papers/" +certificado_expositores.template)
         autores = AutorXArticulo.objects.filter(idUsuario__id__in=Inscripcion.objects.values_list('idUsuario', flat=True),idArticulo__idCongreso=idCongreso, idArticulo__idEstado__in=[5,6]).all()
@@ -525,7 +533,7 @@ def crearCertificadoMasivo(request):
     except Exception as e:
         return Response({
             'status': '400',
-            'error': e.args,
+            'error': e.args + "|| " + mensaje ,
             'data': []
         }, status=status.HTTP_400_BAD_REQUEST)
 
