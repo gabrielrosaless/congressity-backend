@@ -1107,13 +1107,6 @@ def devolverSedes(request):
 @api_view(['GET'])
 def devolverLocalidadesXProvincia(request):
     """ Devuelve la lista localidades por provincia."""
-    token = request.headers['Authorization']
-    if not token:
-        raise AuthenticationFailed('Usuario no autenticado!')
-    try:
-        payload = jwt.decode(token, settings.SECRET_KEY)
-    except jwt.ExpiredSignatureError:
-        raise AuthenticationFailed('Usuario no autenticado!')
     idProvincia = request.GET['idProvincia']
     localidades = Localidad.objects.filter(provincia=idProvincia).all()
     data = []

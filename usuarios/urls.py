@@ -21,6 +21,6 @@ urlpatterns = [
     path('lista-tiposDni/', devolverTiposDNI, name="lista-tiposDni"),
     path('enviarMailRestablecerContrasenia/', enviarMailRestablecerContraseña, name="enviarMailRestablecerContrasenia"),
     path('restablecer-contrasenia/', restablecer_contraseña, name="restablecer-contrasenia"),
-    path('cambiarContraseña/', cambiarContraseña, name="cambiarContraseña")
+    path('cambiar-contrasenia/', cambiarContraseña, name="cambiar-contrasenia")
 ]
 
