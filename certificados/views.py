@@ -476,11 +476,11 @@ def crearCertificadoMasivo(request):
         mensaje = "Ev"
         certificado_evaluador = Certificado.objects.filter(id=idCertificadoEvaluadores).first()
         template_evaluador = os.path.join(settings.BASE_DIR , "articulos/papers/" +certificado_evaluador.template)
-        evaluadores = EvaluadorXCongreso.objects.filter(idCongreso=idCongreso).all()
+        evaluadores = EvaluadorXCongresoXChair.objects.filter(idCongreso=idCongreso).all()
         data = []
         if len(evaluadores) > 0:
             for evaluador in evaluadores:
-                usuario = Usuario.objects.filter(id=evaluador.idUsuario.id).first()
+                usuario = Usuario.objects.filter(id=evaluador.idEvaluador.id).first()
                 datos_usuario = model_to_dict(usuario)
                 img = Image.open(template_evaluador)
                 nombre = "Certificado_Evaluador_"  + str(usuario.id) + "_" + str(idCongreso) + ".png"
