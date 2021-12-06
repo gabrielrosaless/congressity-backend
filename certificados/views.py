@@ -402,10 +402,9 @@ def crearCertificadoMasivo(request):
         certificado_autores = Certificado.objects.filter(id=idCertificadoAutores).first()
         template_autores = os.path.join(settings.BASE_DIR , "articulos/papers/" +certificado_autores.template)
         autores = AutorXArticulo.objects.filter(idArticulo__idCongreso=idCongreso).all()
-        data = []
         if len(autores) > 0:
             for autor in autores:
-                usuario = Usuario.objects.filter(id=autor.id).first()
+                usuario = Usuario.objects.filter(id=autor.idUsuario.id).first()
                 datos_usuario = model_to_dict(usuario)
                 img = Image.open(template_autores)
                 nombre = "Certificado_Autor"  + str(usuario.id) + "_" + str(idCongreso) + ".png"
