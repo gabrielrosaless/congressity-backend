@@ -20,6 +20,7 @@ from django.urls import reverse
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from decouple import config
+import base64
 # Create your views here.
 
 
@@ -518,7 +519,8 @@ def generarContraseña():
     while longitud > 0:
         contraseña = contraseña + cryptogen.choice(valores)
         longitud = longitud - 1
-    return contraseña
+    encoded = base64.b64encode(bytes(contraseña, 'utf-8'))
+    return encoded
 
 def send_mail_restablecer_contraseña(data):
     link = data['link']
