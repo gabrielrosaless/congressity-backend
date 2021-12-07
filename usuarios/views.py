@@ -499,8 +499,8 @@ def restablecer_contraseña(request):
         user = Usuario.objects.get(id=payload['id'])
         if user != None:
             nueva_contraseña = generarContraseña()
-            print(nueva_contraseña)
-            user.set_password(nueva_contraseña)
+            encoded = base64.b64encode(bytes(nueva_contraseña, 'utf-8'))
+            user.set_password(encoded)
             user.save()
             send_mail_nueva_contraseña(nueva_contraseña,user.email)
             return Response({'email': 'Se cambió la contraseña. Controle su casilla de email para consultar la nueva contraseña'}, status=status.HTTP_200_OK)
@@ -519,8 +519,8 @@ def generarContraseña():
     while longitud > 0:
         contraseña = contraseña + cryptogen.choice(valores)
         longitud = longitud - 1
-    encoded = base64.b64encode(bytes(contraseña, 'utf-8'))
-    return encoded
+    
+    return contraseña
 
 def send_mail_restablecer_contraseña(data):
     link = data['link']
