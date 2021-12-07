@@ -1065,10 +1065,11 @@ def eliminarAyudante(request):
         }, status=status.HTTP_400_BAD_REQUEST)
 
     if usuario.is_authenticated:
-        ayudante.delete()
-        rolxusuario = RolxUsuarioxCongreso.objects.filter(idRol=5, idUsuario=id,idCongreso=payload['idCongreso']).first()
+        rolxusuario = RolxUsuarioxCongreso.objects.filter(idRol=5, idUsuario=ayudante.idUsuario.id,idCongreso=payload['idCongreso']).first()
         if rolxusuario != None:
             rolxusuario.delete()
+        ayudante.delete()
+        
         return Response({
                 'status': '200',
                 'error': '',
