@@ -1053,6 +1053,8 @@ def eliminarAyudante(request):
     """ Permite dar de baja un ayudante ( Elimina al ayudante de la tabla Ayudante, pero no de la tabla usuarios.)
     """
     usuario = request.user
+    token = request.headers['Authorization']
+    payload = jwt.decode(token, settings.SECRET_KEY)
     id = request.GET.get('idAyudante')
     ayudante = Ayudante.objects.filter(pk=id).first()
     if ayudante is None:
@@ -1064,6 +1066,9 @@ def eliminarAyudante(request):
 
     if usuario.is_authenticated:
         ayudante.delete()
+        rolxusuario = RolxUsuarioxCongreso.objects.filter(idRol=5, idUsuario=id,idCongreso=payload['idCongreso']).first()
+        if rolxusuario != None:
+            rolxusuario.delete()
         return Response({
                 'status': '200',
                 'error': '',
