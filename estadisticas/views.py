@@ -23,7 +23,7 @@ def devolverTopEvaluadores(request):
         cantidad = request.GET['cantidad']
         with connection.cursor() as cursor:
             cursor.execute('''
-        SELECT "idUsuario_id", COUNT("idUsuario_id") as "Cantidad" FROM public.articulos_evaluacionxevaluador
+        SELECT "idUsuario_id", COUNT("idUsuario_id") as "Cantidad" FROM public.articulos_articulosxevaluador
         GROUP BY "idUsuario_id" ORDER BY "Cantidad" desc limit ''' + cantidad)
             rows = cursor.fetchall()
             cursor.close()
@@ -55,7 +55,7 @@ def devolverTopEvaluadoresCongreso(request):
         idCongreso = request.GET['idCongreso']
         with connection.cursor() as cursor:
             cursor.execute('''
-        SELECT "idUsuario_id", COUNT("idUsuario_id") as "Cantidad" FROM public.articulos_evaluacionxevaluador
+        SELECT "idUsuario_id", COUNT("idUsuario_id") as "Cantidad" FROM public.articulos_articulosxevaluador
         WHERE "idCongreso_id" = ''' + idCongreso + '''
         GROUP BY "idUsuario_id" ORDER BY "Cantidad" desc limit ''' + cantidad)
             rows = cursor.fetchall()
@@ -468,8 +468,8 @@ def devolverEvaluadoresCancelacionesCongreso(request):
 def devolverEstadosArticulos(request):
     try:
         idCongreso = request.GET['idCongreso']
-        cantidad_aprobados = Articulo.objects.filter(idCongreso=idCongreso,idEstado=5).count()
-        cantidad_reetrega = Articulo.objects.filter(idCongreso=idCongreso,idEstado=6).count()
+        cantidad_aprobados = Articulo.objects.filter(idCongreso=idCongreso,idEstado=6).count()
+        cantidad_reetrega = Articulo.objects.filter(idCongreso=idCongreso,idEstado=5).count()
         cantidad_rechazados = Articulo.objects.filter(idCongreso=idCongreso,idEstado=7).count()
         data = {
                 "aprobados": cantidad_aprobados,
@@ -531,8 +531,8 @@ def devolverTopEventos(request):
         data = []
         for i in rows:
             datos = {
-                "evento": i[0],
-                "calificacionpromedio": i[1]
+                "name": i[0],
+                "value": i[1]
             }
             data.append(datos)
         return Response({
@@ -600,8 +600,8 @@ def devolverSimposiosCalificaciones(request):
             cursor.execute('''
         select s.nombre,(sum(c.puntuacion) / count(c."idEvento_id")) as "Promedio" 
         from public.eventos_calificacionevento c
-        inner join public.eventos_evento e on (e.id = c."idEvento_id")
-        inner join public.congresos_simposio s on (s.id = e."idSimposio_id")
+        left join public.eventos_evento e on (e.id = c."idEvento_id")
+        left join public.congresos_simposio s on (s.id = e."idSimposio_id")
         where e."idCongreso_id" = ''' + idCongreso + '''
         group by s.nombre
         order by "Promedio" desc ''' )
