@@ -568,8 +568,8 @@ def devolverReporteEventos(request):
             cursor.close()
         data = []
         for i in rows:
-            datosinicio = str(i[2]).split('T')[0]
-            datosfin = str(i[3]).split('T')[0]
+            datosinicio = str(i[2]).split(' ')[0]
+            datosfin = str(i[3]).split(' ')[0]
             datos = {
                 "evento": i[6],
                 "descripcionEvento": i[0],
