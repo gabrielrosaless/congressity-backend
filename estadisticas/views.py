@@ -374,10 +374,12 @@ def devolverReporteAsistentes(request):
                 datos["Asistio"] = "No"
             data.append(datos)
         for asistente in asistentes_sin_cta:
+            fechadepago = str(asistente.fechaPago).split(' ')[0]
+            fechadeinscripcion = str(asistente.fechaInscripcion).split(' ')[0]
             tarifa =  Tarifa.objects.filter(id=asistente.idTarifa.id).first()
             datos = {
-                "fechaPago": asistente.fechaPago,
-                "fechaInscripcion": asistente.fechaInscripcion,
+                "fechaPago":fechadepago,
+                "fechaInscripcion": fechadeinscripcion,
                 "precioFinal": asistente.precioFinal,
                 "tarifa": tarifa.nombre,
                 "nombre": asistente.nombre,
