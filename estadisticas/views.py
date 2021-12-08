@@ -615,10 +615,11 @@ def devolverSimposiosCalificaciones(request):
             cursor.close()
         data = []
         for i in rows:
-            datos = {
-                "name": i[0],
-                "value": i[1]
-            }
+            if i[0] != None:
+                datos = {
+                    "name": i[0],
+                    "value": i[1]
+                }
             data.append(datos)
         return Response({
             'status': '200',
