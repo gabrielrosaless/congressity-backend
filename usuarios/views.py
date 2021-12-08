@@ -565,9 +565,9 @@ def cambiarContraseña(request):
         idUsuario = payload['id']
         usuario = Usuario.objects.filter(id=idUsuario).first()
         token_contraseñas = request.data['passwords']
-        passwords = jwt.decode(token_contraseñas, 'encriptadofront', algorithms=['HS256'])
-        pass_ant = passwords["pass_antigua"]
-        pass_nueva = passwords['pass_nueva']
+        #passwords = jwt.decode(token_contraseñas, 'encriptadofront', algorithms=['HS256'])
+        pass_ant = token_contraseñas["pass_antigua"]
+        pass_nueva = token_contraseñas['pass_nueva']
         if not usuario.check_password(pass_ant):
             return Response({
                         'status': '400',
