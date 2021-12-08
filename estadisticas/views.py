@@ -348,11 +348,13 @@ def devolverReporteAsistentes(request):
         asistentes_sin_cta = InscripcionSinCuenta.objects.filter(idCongreso=idCongreso).all()
         data = []
         for asistente in asistentes_cta:
+            fechadepago = str(asistente.fechaPago).split(' ')[0]
+            fechadeinscripcion = str(asistente.fechaInscripcion).split(' ')[0]
             tarifa =  Tarifa.objects.filter(id=asistente.idTarifa.id).first()
             usuario = Usuario.objects.filter(id=asistente.idUsuario.id).first()
             datos = {
-                "fechaPago": asistente.fechaPago,
-                "fechaInscripcion": asistente.fechaInscripcion,
+                "fechaPago": fechadepago,
+                "fechaInscripcion": fechadeinscripcion,
                 "precioFinal": asistente.precioFinal,
                 "tarifa": tarifa.nombre,
                 "nombre": usuario.nombre,
