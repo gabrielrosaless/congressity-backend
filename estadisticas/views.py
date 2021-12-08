@@ -614,14 +614,13 @@ def devolverSimposiosCalificaciones(request):
             rows = cursor.fetchall()
             cursor.close()
         data = []
-        datos = {}
         for i in rows:
             if i[0] != None:
                 datos = {
                     "name": i[0],
                     "value": i[1]
                 }
-            data.append(datos)
+                data.append(datos)
         return Response({
             'status': '200',
             'error': '',
