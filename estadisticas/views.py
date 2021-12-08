@@ -614,6 +614,7 @@ def devolverSimposiosCalificaciones(request):
             rows = cursor.fetchall()
             cursor.close()
         data = []
+        datos = {}
         for i in rows:
             if i[0] != None:
                 datos = {
