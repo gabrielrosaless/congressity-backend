@@ -495,7 +495,7 @@ def getEventosPorDia(request):
     try:
         eventos = Evento.objects.filter(idCongreso=idCongreso).all().order_by('start')
         evs = None
-        if eventos is None:
+        if len(eventos) == 0:
             return Response({
                 'status': '200',
                 'error': '',
