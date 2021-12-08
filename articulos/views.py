@@ -3027,6 +3027,8 @@ def realizarEntregaFinal(request):
     """
     idArticulo = request.data['idArticulo']
     archivo = request.FILES['articulo']
+    autores = request.data['autores']
+    autores = autores.split(',')
     try:
         aprobado = EstadoArticulo.objects.filter(id=6).get()
         reentrega = EstadoArticulo.objects.filter(id=8).get()
@@ -3078,6 +3080,19 @@ def realizarEntregaFinal(request):
         file_url = filename
         articulo.url_camera_ready = filename
         articulo.save()
+
+        for autor in autores:
+            if Usuario.objects.filter(email=autor).exists():
+                idAutor = Usuario.objects.get(email=autor).id
+                if not AutorXArticulo.objects.filter(idUsuario=idAutor,idArticulo=idArticulo).exists():
+                    datos = {
+                    "idArticulo": idArticulo,
+                    "idUsuario": idAutor,
+                    }
+                    serializer_autor = AutorxArticuloSerializer(data=datos)
+                    if serializer_autor.is_valid():
+                        serializer_autor.save()
+
         return Response({
                 'status': '200',
                 'error': '',
