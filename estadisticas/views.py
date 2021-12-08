@@ -568,12 +568,14 @@ def devolverReporteEventos(request):
             cursor.close()
         data = []
         for i in rows:
+            datosinicio = i[2].split('T')[0]
+            datosfin = i[3].split('T')[0]
             datos = {
                 "evento": i[6],
                 "descripcionEvento": i[0],
                 "calificacionPromedio": i[7],
-                "inicio": i[2],
-                "fin": i[3],
+                "inicio":datosinicio,
+                "fin": datosfin,
                 "articulo": i[4],
                 "aula": i[1],
                 "simposio": i[5]
