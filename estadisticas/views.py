@@ -125,8 +125,8 @@ def devolverTopSimposiosGeneral(request):
             cursor.close()
         data = []
         for i in rows:
-            simposio = SimposiosxCongreso.objects.filter(id=i[0]).first()
-            simposio_gral = Simposio.objects.filter(id=simposio.idSimposio.id).first()
+            # simposio = SimposiosxCongreso.objects.filter(id=i[0]).first()
+            simposio_gral = Simposio.objects.filter(id=i[0]).first()
             datos = {
                 "name": simposio_gral.nombre,
                 "value": i[1]
