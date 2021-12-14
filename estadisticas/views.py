@@ -119,13 +119,14 @@ def devolverTopSimposiosGeneral(request):
         cantidad = request.GET['cantidad']
         with connection.cursor() as cursor:
             cursor.execute('''
-        SELECT "idSimposio_id", COUNT("idSimposio_id") as "Cantidad" FROM public.articulos_articulo
-        GROUP BY "idSimposio_id" ORDER BY "Cantidad" desc limit ''' + cantidad)
+        SELECT co.id, COUNT(co.id) as "Cantidad" FROM public.articulos_articulo a
+        INNER JOIN public.congresos_simposiosxcongreso c on  (a."idSimposio_id" = c.id)
+        INNER JOIN public.congresos_simposio co on (c."idSimposio_id" = co.id)
+        GROUP BY co.id ORDER BY "Cantidad" desc limit''' + cantidad)
             rows = cursor.fetchall()
             cursor.close()
         data = []
         for i in rows:
-            # simposio = SimposiosxCongreso.objects.filter(id=i[0]).first()
             simposio_gral = Simposio.objects.filter(id=i[0]).first()
             datos = {
                 "name": simposio_gral.nombre,
