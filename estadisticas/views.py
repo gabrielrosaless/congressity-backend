@@ -122,7 +122,7 @@ def devolverTopSimposiosGeneral(request):
         SELECT co.id, COUNT(co.id) as "Cantidad" FROM public.articulos_articulo a
         INNER JOIN public.congresos_simposiosxcongreso c on  (a."idSimposio_id" = c.id)
         INNER JOIN public.congresos_simposio co on (c."idSimposio_id" = co.id)
-        GROUP BY co.id ORDER BY "Cantidad" desc limit''' + cantidad)
+        GROUP BY co.id ORDER BY "Cantidad" desc limit ''' + cantidad)
             rows = cursor.fetchall()
             cursor.close()
         data = []
@@ -138,10 +138,10 @@ def devolverTopSimposiosGeneral(request):
             'error': '',
             'data': data
         }, status=status.HTTP_200_OK)
-    except:
+    except Exception as e:
         return Response({
             'status': '400',
-            'error': "Error.",
+            'error': e.args,
             'data': []
         }, status=status.HTTP_400_BAD_REQUEST)
 
