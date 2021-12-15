@@ -572,7 +572,7 @@ def consultaArticuloXResponsable(request):
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Usuario no autenticado!')
         usuario = Usuario.objects.filter(id=payload['id']).first()
-        articulos = Articulo.objects.filter(responsable=usuario.email).all()
+        articulos = Articulo.objects.filter(responsable=usuario.email, idCongreso=payload['idCongreso']).all()
         data = []
         if len(articulos) > 0:
             for articulo in articulos:
