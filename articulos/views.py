@@ -3031,10 +3031,10 @@ def realizarEntregaFinal(request):
     autores = autores.split(',')
     try:
         aprobado = EstadoArticulo.objects.filter(id=6).get()
-        reentrega = EstadoArticulo.objects.filter(id=8).get()
+        reentrega = EstadoArticulo.objects.filter(id=5).get()
         articulo = Articulo.objects.get(id = idArticulo)
 
-        if ((articulo.idEstado != aprobado) and (articulo.idEstado != reentrega)):
+        if (articulo.idEstado != aprobado and articulo.idEstado != reentrega):
             return Response({
                 'status': '400',
                 'error': 'Error, el articulo no fue aprobado para subir la versión final',
